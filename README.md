@@ -26,10 +26,10 @@ To set up this application to run on your local disk, you need to follow this st
 2. Install Geoserver
 3. Install PostgreSQL
 4. Install the webapp:
-   a. Clone the repository at https://github.com/bhekanik/cadmapping
+   a. Clone the repository at https://github.com/bhekanik/cm-webmap
    b. run npm install
-   b. run npm start
-   c. It should open http://localhost:3000/ in the browser automatically. Open it manually if it doesn't open automatically. The server supports hot reloading.
+   c. run npm start
+   d. It should open http://localhost:3000/ in the browser automatically. Open it manually if it doesn't open automatically. The server supports hot reloading.
 
 NB: Accessing data from the WMS or a WFS servers will require you to disable CORS on your browser.
 
