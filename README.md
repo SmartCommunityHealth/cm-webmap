@@ -1,4 +1,4 @@
-cadmapping
+cm-webapp
 
 This is a web mapping application written in react.js. It uses geoserver as the map server and postgis as the spatial database. The functionality of the app includes the following:
 
