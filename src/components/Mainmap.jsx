@@ -57,11 +57,6 @@ VectorLayer.prototype.buildHeaders = function() {
 
 export class Mainmap extends Component {
 	componentDidMount() {
-		// fetch("../assets/res/world_countries.geojson").then(data =>
-		// 	console.log("data:", data)
-		// );
-		// .then(json => console.log("json", json));
-
 		const view = new View({
 			projection: "EPSG:4326",
 			center: [0, 0],
@@ -72,11 +67,12 @@ export class Mainmap extends Component {
 			source: new VectorSource({
 				features: new GeoJSON().readFeatures(data)
 			}),
-			name: "World Countries",
+			name:
+				"World Countries" /*,
 			headers: {
 				pop_est: "integer",
 				gdp_md_est: "integer"
-			}
+			}*/
 		});
 
 		const dragAndDrop = new DragAndDrop({
@@ -173,21 +169,21 @@ export class Mainmap extends Component {
 				}
 			});
 
-		var measureControl = new Interaction({
-			label: " ",
-			tipLabel: "Measure distances and areas",
-			className: "ol-measure ol-unselectable ol-control",
-			interaction: new Measure({
-				map: map
-			})
-		});
-		console.log(measureControl);
-		measureControl.get("interaction").on("change:result", function(evt) {
-			const result = evt.target.get("result");
-			Layertree.messages.textContent = result.measurement + " " + result.unit;
-		});
+		// var measureControl = new Interaction({
+		// 	label: " ",
+		// 	tipLabel: "Measure distances and areas",
+		// 	className: "ol-measure ol-unselectable ol-control",
+		// 	interaction: new Measure({
+		// 		map: map
+		// 	})
+		// });
+		// console.log(measureControl);
+		// measureControl.get("interaction").on("change:result", function(evt) {
+		// 	const result = evt.target.get("result");
+		// 	Layertree.messages.textContent = result.measurement + " " + result.unit;
+		// });
 
-		Toolbar.addControl(measureControl);
+		// Toolbar.addControl(measureControl);
 
 		const flyTo = (location, done) => {
 			let duration = 2000;
@@ -231,107 +227,104 @@ export class Mainmap extends Component {
 		// const ol3d = new OLCesium({ map: map });
 		// ol3d.setEnabled(true);
 
-		// map.on("click", function(evt) {
-		// 	const pixel = evt.pixel;
-		// 	const coord = evt.coordinate;
-		// 	const attributeForm = document.createElement("form");
-		// 	attributeForm.className = "popup";
-		// 	this.getOverlays().clear();
+		map.on("click", function(evt) {
+			const pixel = evt.pixel;
+			const coord = evt.coordinate;
+			const attributeForm = document.createElement("form");
+			attributeForm.className = "popup";
+			this.getOverlays().clear();
 
-		// 	let firstFeature = true;
+			let firstFeature = true;
 
-		// 	function createRow(attributeName, attributeValue, type) {
-		// 		const rowElem = document.createElement("div");
-		// 		const attributeSpan = document.createElement("span");
-		// 		attributeSpan.textContent = attributeName + ": ";
-		// 		rowElem.appendChild(attributeSpan);
-		// 		const attributeInput = document.createElement("input");
-		// 		attributeInput.name = attributeName;
-		// 		attributeInput.type = "text";
-		// 		if (type !== "string") {
-		// 			attributeInput.type = "number";
-		// 			attributeInput.step = type === "float" ? 1e-6 : 1;
-		// 		}
-		// 		attributeInput.value = attributeValue;
-		// 		rowElem.appendChild(attributeInput);
-		// 		return rowElem;
-		// 	}
+			function createRow(attributeName, attributeValue, type) {
+				const rowElem = document.createElement("div");
+				const attributeSpan = document.createElement("span");
+				attributeSpan.textContent = attributeName + ": ";
+				rowElem.appendChild(attributeSpan);
+				const attributeInput = document.createElement("input");
+				attributeInput.className = "form-control form-control-sm";
+				attributeInput.name = attributeName;
+				attributeInput.type = "text";
+				if (type !== "string") {
+					attributeInput.type = "number";
+					attributeInput.step = type === "float" ? 1e-6 : 1;
+				}
+				attributeInput.value = attributeValue;
+				rowElem.appendChild(attributeInput);
+				return rowElem;
+			}
 
-		// 	this.forEachFeatureAtPixel(
-		// 		pixel,
-		// 		(feature, layer) => {
-		// 			console.log("Feature: ", feature);
-		// 			console.log("Layer: ", layer);
-		// 			if (firstFeature) {
-		// 				const attributes = feature.getProperties();
-		// 				const headers = layer.get("headers");
-		// 				for (var i in attributes) {
-		// 					if (typeof attributes[i] !== "object" && i in headers) {
-		// 						attributeForm.appendChild(
-		// 							createRow(i, attributes[i], headers[i])
-		// 						);
-		// 					}
-		// 				}
-		// 				if (attributeForm.children.length > 0) {
-		// 					const saveAttributes = document.createElement("input");
-		// 					saveAttributes.type = "submit";
-		// 					saveAttributes.className = "save";
-		// 					saveAttributes.value = "";
-		// 					attributeForm.addEventListener("submit", function(evt) {
-		// 						evt.preventDefault();
-		// 						let attributeList = {};
-		// 						let inputList = [].slice.call(
-		// 							this.querySelectorAll("input[type=text], input[type=number]")
-		// 						);
-		// 						for (var i = 0; i < inputList.length; i += 1) {
-		// 							switch (headers[inputList[i].name]) {
-		// 								case "string":
-		// 									attributeList[inputList[i].name] = inputList[
-		// 										i
-		// 									].value.toString();
-		// 									break;
-		// 								case "integer":
-		// 									attributeList[inputList[i].name] = parseInt(
-		// 										inputList[i].value
-		// 									);
-		// 									break;
-		// 								case "float":
-		// 									attributeList[inputList[i].name] = parseFloat(
-		// 										inputList[i].value
-		// 									);
-		// 									break;
-		// 								default:
-		// 									attributeList[inputList[i].name] = inputList[i].value;
-		// 									break;
-		// 							}
-		// 						}
-		// 						feature.setProperties(attributeList);
-		// 						map.getOverlays().clear();
-		// 					});
-		// 					attributeForm.appendChild(saveAttributes);
-		// 					this.addOverlay(
-		// 						new Overlay({
-		// 							element: attributeForm,
-		// 							position: coord
-		// 						})
-		// 					);
-		// 					firstFeature = false;
-		// 				}
-		// 			}
-		// 		},
-		// 		map,
-		// 		function(layerCandidate) {
-		// 			if (
-		// 				this.selectedLayer !== null &&
-		// 				layerCandidate.get("id") === this.selectedLayer.id
-		// 			) {
-		// 				return true;
-		// 			}
-		// 			return false;
-		// 		},
-		// 		layertree
-		// 	);
-		// });
+			this.forEachFeatureAtPixel(
+				pixel,
+				(feature, layer) => {
+					if (firstFeature) {
+						const attributes = feature.getProperties();
+						const headers = layer.get("headers");
+						for (var i in attributes) {
+							if (typeof attributes[i] !== "object" && i in headers) {
+								attributeForm.appendChild(
+									createRow(i, attributes[i], headers[i])
+								);
+							}
+						}
+						if (attributeForm.children.length > 0) {
+							const saveAttributes = document.createElement("input");
+							saveAttributes.type = "submit";
+							saveAttributes.className = "save";
+							saveAttributes.value = "";
+							attributeForm.addEventListener("submit", function(evt) {
+								evt.preventDefault();
+								let attributeList = {};
+								let inputList = [].slice.call(this.querySelectorAll("input"));
+								for (var i = 0; i < inputList.length; i += 1) {
+									switch (headers[inputList[i].name]) {
+										case "string":
+											attributeList[inputList[i].name] = inputList[
+												i
+											].value.toString();
+											break;
+										case "integer":
+											attributeList[inputList[i].name] = parseInt(
+												inputList[i].value
+											);
+											break;
+										case "float":
+											attributeList[inputList[i].name] = parseFloat(
+												inputList[i].value
+											);
+											break;
+										default:
+											attributeList[inputList[i].name] = inputList[i].value;
+											break;
+									}
+								}
+								feature.setProperties(attributeList);
+								map.getOverlays().clear();
+							});
+							attributeForm.appendChild(saveAttributes);
+							this.addOverlay(
+								new Overlay({
+									element: attributeForm,
+									position: coord
+								})
+							);
+							firstFeature = false;
+						}
+					}
+				},
+				map,
+				function(layerCandidate) {
+					if (
+						this.selectedLayer !== null &&
+						layerCandidate.get("id") === this.selectedLayer.id
+					) {
+						return true;
+					}
+					return false;
+				},
+				layertree
+			);
+		});
 
 		this.props.onUpdateMap(map);
 		this.props.onUpdateTree(layertree);

@@ -285,7 +285,6 @@ body {
 .popup {
 	border: 1px solid grey;
 	background-color: #c2ddf2;
-	border-radius: 0.5em;
 }
 .popup span {
 	display: inline-block;
@@ -314,6 +313,7 @@ body {
 }
 .popup .save {
 	background-image: url(../assets/res/button_save.png);
+	background-color: rgba(0, 0, 0, 0.2);
 }
 .popup input[type="text"],
 .popup input[type="number"] {

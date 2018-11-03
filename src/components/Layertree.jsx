@@ -132,26 +132,6 @@ class Layertree extends Component {
 					}
 				});
 
-				const layerSpan = document.createElement("span");
-				layerSpan.textContent = layerDiv.title;
-
-				//handle selecting a layer element and handle double clicking for editing
-				layerDiv.appendChild(this.addSelectEvent(layerSpan, true));
-				layerSpan.addEventListener("dblclick", function() {
-					this.contentEditable = true;
-					layerDiv.classList.remove("ol-unselectable");
-					this.focus();
-				});
-				layerSpan.addEventListener("blur", function() {
-					if (this.contentEditable) {
-						this.contentEditable = false;
-						layer.set("name", this.textContent);
-						layerDiv.classList.add("ol-unselectable");
-						layerDiv.title = this.textContent;
-						this.scrollTo(0, 0);
-					}
-				});
-
 				//create the check box and handle selection and deselection
 				const visibleBox = document.createElement("input");
 				visibleBox.type = "checkbox";
@@ -165,6 +145,44 @@ class Layertree extends Component {
 					}
 				});
 				layerDiv.appendChild(this.stopPropagationOnEvent(visibleBox, "click"));
+
+				const layerSpan = document.createElement("span");
+				const layerText = document.createElement("input");
+				layerText.type = "text";
+				layerText.hidden = true;
+				layerSpan.textContent = layerDiv.title;
+
+				//handle selecting a layer element and handle double clicking for editing
+				layerDiv.appendChild(this.addSelectEvent(layerSpan, true));
+				layerDiv.appendChild(this.stopPropagationOnEvent(layerText, "click"));
+				layerSpan.addEventListener("dblclick", function() {
+					this.hidden = true;
+					layerText.defaultValue = layerDiv.title;
+					layerText.hidden = false;
+					layerDiv.classList.remove("ol-unselectable");
+					layerText.focus();
+					layerDiv.draggable = false;
+				});
+				layerText.addEventListener("blur", function() {
+					if (!this.hidden) {
+						finishLayerNameEdit(this);
+					}
+				});
+				layerText.addEventListener("keyup", function(e) {
+					if (!this.hidden && e.keyCode === 13) {
+						finishLayerNameEdit(this);
+					}
+				});
+				function finishLayerNameEdit(_this) {
+					layer.set("name", _this.value);
+					layerDiv.classList.add("ol-unselectable");
+					layerDiv.title = _this.value;
+					layerSpan.textContent = layerDiv.title;
+					layerSpan.hidden = false;
+					_this.hidden = true;
+					layerSpan.scrollTo(0, 0);
+					layerDiv.draggable = true;
+				}
 
 				//create the layer controls on the active layer
 				const layerControls = document.createElement("div");
@@ -194,8 +212,9 @@ class Layertree extends Component {
 
 				//styling options
 				if (layer instanceof VectorLayer) {
-					layerControls.appendChild(document.createElement("br"));
+					layerControls.appendChild(document.createElement("hr"));
 					const attributeOptions = document.createElement("select");
+					attributeOptions.className = "form-control";
 					layerControls.appendChild(
 						this.stopPropagationOnEvent(attributeOptions, "click")
 					);
@@ -209,6 +228,7 @@ class Layertree extends Component {
 					layerControls.appendChild(
 						this.stopPropagationOnEvent(defaultStyle, "click")
 					);
+					defaultStyle.className = "btn btn-primary btn-sm";
 					const graduatedStyle = this.createButton(
 						"stylelayer",
 						"Graduated",
@@ -218,6 +238,7 @@ class Layertree extends Component {
 					layerControls.appendChild(
 						this.stopPropagationOnEvent(graduatedStyle, "click")
 					);
+					graduatedStyle.className = "btn btn-primary btn-sm";
 					const categorizedStyle = this.createButton(
 						"stylelayer",
 						"Categorized",
@@ -227,11 +248,11 @@ class Layertree extends Component {
 					layerControls.appendChild(
 						this.stopPropagationOnEvent(categorizedStyle, "click")
 					);
+					categorizedStyle.className = "btn btn-primary btn-sm";
 					layer.set("style", layer.getStyle());
 					layer.on(
 						"propertychange",
-						evt => {
-							console.log("evt.key", evt.key);
+						function(evt) {
 							if (evt.key === "headers") {
 								this.removeContent(attributeOptions);
 								const headers = layer.get("headers");
@@ -244,7 +265,6 @@ class Layertree extends Component {
 					);
 				}
 
-				layerDiv.appendChild(layerSpan);
 				this.layerContainer.insertBefore(
 					layerDiv,
 					this.layerContainer.firstChild
@@ -295,19 +315,17 @@ Layertree.prototype.createButton = function(
 			});
 			return buttonElem;
 		case "deletelayer":
-			const _this = this;
-			buttonElem.addEventListener("click", function() {
-				if (_this.selectedLayer) {
-					const layer = _this.getLayerById(_this.selectedLayer.id);
-					_this.map.removeLayer(layer);
-					_this.messages.textContent = "Layer removed successfully.";
+			buttonElem.addEventListener("click", () => {
+				if (this.selectedLayer) {
+					const layer = this.getLayerById(this.selectedLayer.id);
+					this.map.removeLayer(layer);
+					this.messages.textContent = "Layer removed successfully.";
 				} else {
-					_this.messages.textContent = "No selected layer to remove.";
+					this.messages.textContent = "No selected layer to remove.";
 				}
 			});
 			return buttonElem;
 		case "stylelayer":
-			const __this = this;
 			buttonElem.textContent = elemTitle;
 			if (elemTitle === "Default") {
 				buttonElem.addEventListener("click", function() {
@@ -318,9 +336,9 @@ Layertree.prototype.createButton = function(
 					elemTitle === "Graduated"
 						? this.styleGraduated
 						: this.styleCategorized;
-				buttonElem.addEventListener("click", function() {
+				buttonElem.addEventListener("click", () => {
 					const attribute = buttonElem.parentNode.querySelector("select").value;
-					styleFunction.call(__this, layer, attribute);
+					styleFunction.call(this, layer, attribute);
 				});
 			}
 			return buttonElem;
@@ -612,6 +630,7 @@ Layertree.prototype.graduatedColorFactory = function(classNum, rgb1, rgb2) {
 		colors.push([red, green, blue, 1]);
 	}
 	colors.push([rgb2[0], rgb2[1], rgb2[2], 1]);
+	console.log("colors: ", colors);
 	return colors;
 };
 

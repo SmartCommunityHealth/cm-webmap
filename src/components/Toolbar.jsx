@@ -1,3 +1,5 @@
+//@ts-check
+
 import { Component } from "react";
 
 import { Collection, Map, inherits, Observable, Feature } from "ol";
@@ -69,7 +71,6 @@ Toolbar.prototype.removeControl = function(control) {
 };
 
 export const Interaction = function(opt_options) {
-	console.log(this);
 	const options = opt_options || {};
 
 	//create the toolbar div and create the button
