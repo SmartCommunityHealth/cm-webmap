@@ -8,6 +8,8 @@ import { WMSCapabilities, WFS, GeoJSON, TopoJSON, KML } from "ol/format";
 import OSMXML from "ol/format/OSMXML";
 import { Style, Stroke, Fill } from "ol/style";
 
+import shpjs from "shpjs";
+
 class Layertree extends Component {
 	"use strict";
 	constructor(props) {
@@ -67,6 +69,10 @@ class Layertree extends Component {
 			containerDiv.appendChild(controlDiv);
 			controlDiv.appendChild(
 				this.createButton("newvector", "New Vector Layer", "addlayer")
+			);
+			containerDiv.appendChild(controlDiv);
+			controlDiv.appendChild(
+				this.createButton("newshp", "New Shape Layer", "addlayer")
 			);
 
 			/* Create the div that will contain the layers and add it to the
@@ -574,6 +580,51 @@ Layertree.prototype.addVectorLayer = function(form) {
 	this.addBufferIcon(layer);
 	this.map.addLayer(layer);
 	this.messages.textContent = "Vector layer added successfully.";
+	return this;
+};
+
+Layertree.prototype.addShpLayer = function(form) {
+	const formSelect = document.getElementById("availableshps");
+	const formFile = document.getElementById("shpfile");
+
+	// if (formSelect.value === ""){
+	// 	formFile.file = ""
+	// }
+
+	const formProjection = document.getElementById("vectorprojection");
+	const formDisplayname = document.getElementById("shpdisplayname");
+
+	const file = formFile.files[0];
+	console.log("shapefile: ", file);
+	const currentProj = this.map.getView().getProjection();
+	const fr = new FileReader();
+	const sourceFormat = new GeoJSON();
+	const source = new VectorSource();
+
+	fr.onload = function(evt) {
+		const shpData = evt.target.result;
+		const dataProjection =
+			formProjection.value ||
+			sourceFormat.readProjection(shpData) ||
+			currentProj;
+		shpjs.getShapefile(shpData).then(function(geojson) {
+			source.addFeatures(
+				sourceFormat.readFeatures(geojson, {
+					dataProjection: dataProjection,
+					featureProjection: currentProj
+				})
+			);
+		});
+	};
+	fr.readAsArrayBuffer(file);
+	var layer = new VectorLayer({
+		source: source,
+		name: formDisplayname.value,
+		strategy: bbox
+	});
+	this.addBufferIcon(layer);
+	this.map.addLayer(layer);
+	this.messages.textContent = "Shapefile added successfully.";
 	return this;
 };
 

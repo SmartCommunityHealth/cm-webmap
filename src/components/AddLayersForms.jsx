@@ -29,7 +29,7 @@ export class AddLayersForms extends Component {
 											name="server"
 											type="text"
 											required="required"
-											defaultValue="https://mesonet.agron.iastate.edu/cgi-bin/wms/goes/conus_vis.cgi?"
+											defaultValue="http://localhost:7000/geoserver/cadmapping/wms"
 										/>
 									</td>
 									<td>
@@ -262,6 +262,93 @@ export class AddLayersForms extends Component {
 						</Table>
 					</form>
 				</div>
+				<div id="newshp" className="toggleable" style={{ display: "none" }}>
+					<form
+						id="addShp_form"
+						className="addlayer"
+						onSubmit={evt => {
+							evt.preventDefault();
+							this.props.layertree.addShpLayer(this);
+							document.getElementById("newshp").style.display = "none";
+						}}
+					>
+						<h3>Add Shapefile</h3>
+						<table>
+							<tbody>
+								<tr>
+									<td>Available Shapefiles:</td>
+									<td>
+										<select id="availableshps" name="availableshps">
+											<option value="">None</option>
+											<option value="tshwane_boundary.zip">
+												Tshwane Boundary
+											</option>
+											<option value="tshwane_buildings.zip">
+												Tshwane Buildings
+											</option>
+											<option value="tshwane_places.zip">Tshwane Places</option>
+											<option value="tshwane_roads.zip">Tshwane Roads</option>
+											<option value="tshwane_waterbodies.zip">
+												Tshwane Waterbodies
+											</option>
+										</select>
+									</td>
+								</tr>
+								<tr>
+									<td>Add New Shapefile:</td>
+									<td>
+										<FormControl
+											id="shpfile"
+											name="shpfile"
+											type="file"
+											required="required"
+											accept=".zip"
+										/>
+									</td>
+								</tr>
+								<tr>
+									<td>Display name:</td>
+									<td>
+										<FormControl
+											id="shpdisplayname"
+											name="displayname"
+											type="text"
+										/>
+									</td>
+								</tr>
+								<tr>
+									<td>Projection:</td>
+									<td>
+										<FormControl name="projection" type="text" />
+									</td>
+								</tr>
+								<tr>
+									<td>
+										<FormControl
+											className="btn btn-primary"
+											type="submit"
+											value="Add layer"
+										/>
+									</td>
+									<td>
+										<Button
+											type="button"
+											bsStyle="danger"
+											value="Cancel"
+											onClick={() => {
+												document.getElementById("newshp").style.display =
+													"none";
+											}}
+										>
+											Cancel
+										</Button>
+									</td>
+								</tr>
+							</tbody>
+						</table>
+					</form>
+				</div>
+
 				<div id="newvector" className="toggleable" style={{ display: "none" }}>
 					<form
 						id="newvector_form"

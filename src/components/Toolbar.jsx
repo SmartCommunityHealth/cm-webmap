@@ -1,8 +1,16 @@
 import { Component } from "react";
 
-import { Collection, Map, inherits, Observable, Feature, Overlay } from "ol";
+import {
+	Collection,
+	Map,
+	inherits,
+	Observable,
+	Feature,
+	Overlay,
+	View
+} from "ol";
 import { Vector as VectorLayer } from "ol/layer";
-import { Control, ZoomToExtent, Zoom } from "ol/control";
+import { Control, ZoomToExtent } from "ol/control";
 import { Vector as VectorSource } from "ol/source";
 import {
 	Select,
@@ -10,12 +18,13 @@ import {
 	Draw,
 	Modify,
 	Snap,
-	Pointer,
-	Interaction as intInteraction
+	Pointer
+	/*Interaction as intInteraction*/
 } from "ol/interaction";
 import { Style, Circle, Fill, Stroke } from "ol/style";
 import { Point, Polygon, LineString } from "ol/geom";
 import SimpleGeometry from "ol/geom/SimpleGeometry";
+import { linear, easeIn } from "ol/easing";
 
 export class Toolbar extends Component {
 	"use strict";
@@ -189,7 +198,7 @@ Toolbar.prototype.addInfoControl = function() {
 			const layer = layertree.getLayerById(layertree.selectedLayer.id);
 			if (layer instanceof VectorLayer) {
 				info.setDisabled(false);
-				const infoActive = info.get("active");
+				// const infoActive = info.get("active");
 
 				map.on("click", function(evt) {
 					const pixel = evt.pixel;
@@ -785,7 +794,7 @@ export const NavigationHistory = function(opt_options) {
 	backButton.title = options.backButtonTipLabel || "Previous view";
 	backButton.addEventListener("click", function(evt) {
 		const historyArray = _this.get("history");
-		const currIndex = _this.get("index");
+		let currIndex = _this.get("index");
 		if (currIndex > 0) {
 			currIndex -= 1;
 			_this.setProperties({
@@ -807,7 +816,7 @@ export const NavigationHistory = function(opt_options) {
 	nextButton.title = options.nextButtonTipLabel || "Next view";
 	nextButton.addEventListener("click", function(evt) {
 		const historyArray = _this.get("history");
-		const currIndex = _this.get("index");
+		let currIndex = _this.get("index");
 		if (currIndex < historyArray.length - 1) {
 			currIndex += 1;
 			_this.setProperties({
@@ -866,7 +875,7 @@ NavigationHistory.prototype.setMap = function(map) {
 							rotation: view.getRotation()
 						};
 						const historyArray = this.get("history");
-						const currIndex = this.get("index");
+						let currIndex = this.get("index");
 						historyArray.splice(
 							currIndex + 1,
 							historyArray.length - currIndex - 1
@@ -919,68 +928,182 @@ export const ZoomTo = function(opt_options) {
 inherits(ZoomTo, Control);
 
 Toolbar.prototype.addExtentControls = function() {
-	const _this = this;
 	const zoomFull = new ZoomToExtent({
 		label: " ",
 		tipLabel: "Zoom to full extent"
 	});
-	const zoomToLayer = new Zoom({
+
+	let ztle = [];
+	this.layertree.selectEventEmitter.on("change", () => {
+		const layer = this.layertree.getLayerById(this.layertree.selectedLayer.id);
+
+		if (layer.getSource().getExtent()) {
+			ztle = layer.getSource().getExtent();
+		}
+	});
+
+	const zoomToLayer = new ZoomToExtent({
 		class: "ol-zoom-layer ol-unselectable ol-control",
 		tipLabel: "Zoom to layer extent",
-		extentFunction: function() {
-			const source = _this.layertree
-				.getLayerById(_this.layertree.selectedLayer.id)
-				.getSource();
-			if (source.getExtent()) {
-				return source.getExtent();
-			}
-			return false;
-		}
+		extent: ztle
 	});
-	const zoomToSelected = new Zoom({
+
+	let ztse = [];
+	if (this.selectInteraction) {
+		const features = this.selectInteraction.getFeatures();
+		if (features.getLength() === 1) {
+			const geom = features.item(0).getGeometry();
+			if (geom instanceof SimpleGeometry) {
+				return geom;
+			}
+			ztse = geom.getExtent();
+			console.log("ztse: ", ztse);
+		}
+	}
+
+	const zoomToSelected = new ZoomToExtent({
 		class: "ol-zoom-selected ol-unselectable ol-control",
 		tipLabel: "Zoom to selected feature",
-		extentFunction: function() {
-			const features = _this.selectInteraction.getFeatures();
-			if (features.getLength() === 1) {
-				const geom = features.item(0).getGeometry();
-				if (geom instanceof SimpleGeometry) {
-					return geom;
-				}
-				return geom.getExtent();
-			}
-			return false;
-		}
+		extent: ztse
 	});
-	this.addControl(zoomFull);
-	// .addControl(zoomToLayer)
-	// .addControl(zoomToSelected);
+
+	this.addControl(zoomFull)
+		.addControl(zoomToLayer)
+		.addControl(zoomToSelected);
+
 	return this;
 };
 
-export const RotationControl = function(opt_options) {
+export const RocketFlight = function() {
+	const _this = this;
+	const controlDiv = document.createElement("div");
+	controlDiv.className = "ol-rocket ol-unselectable ol-control";
+	const controlButton = document.createElement("button");
+	controlButton.title = "Launch me";
+	controlButton.addEventListener("click", function() {
+		const view = _this.getMap().getView();
+		_this.getMap().beforeRender(
+			rocketTakeoff({
+				resolution: view.getResolution(),
+				rotation: view.getRotation()
+			})
+		);
+		view.setResolution(39135.75848201024);
+		setTimeout(function() {
+			_this.getMap().beforeRender(
+				View.animate.pan({
+					duration: 2000,
+					source: view.getCenter(),
+					easing: linear
+				}),
+				rocketLanding({
+					resolution: view.getResolution(),
+					rotation: view.getRotation()
+				})
+			);
+			view.setProperties({
+				center: [2026883.0676951527, 5792745.55306364],
+				resolution: 0.5971642834779395
+			});
+		}, 5100);
+	});
+	controlDiv.appendChild(controlButton);
+	Control.call(this, {
+		element: controlDiv
+	});
+};
+inherits(RocketFlight, Control);
+
+const rocketTakeoff = function(options) {
+	const now = +new Date();
+	return function(map, frameState) {
+		if (frameState.time < now + 5000) {
+			let delta = 1 - easeIn((frameState.time - now) / 5000);
+			let deltaResolution =
+				options.resolution - frameState.viewState.resolution;
+			frameState.animate = true;
+			frameState.viewState.resolution += delta * deltaResolution;
+			if (frameState.time > now + 2000 && frameState.time < now + 3000) {
+				let rotateDelta = linear((frameState.time - now - 2000) / 1000);
+				let deltaRotation = options.rotation - 0.5;
+				frameState.viewState.rotation += deltaRotation * rotateDelta;
+			} else if (
+				frameState.time >= now + 3000 &&
+				frameState.time < now + 4000
+			) {
+				let rotateDelta = 1 - linear((frameState.time - now - 3000) / 1000);
+				let deltaRotation = options.rotation - 0.5;
+				frameState.viewState.rotation += deltaRotation * rotateDelta;
+			}
+			frameState.viewHints[0] += 1;
+			return true;
+		}
+		return false;
+	};
+};
+
+const rocketLanding = function(options) {
+	let now = +new Date();
+	let direction = Math.round(Math.random());
+	return function(map, frameState) {
+		if (frameState.time < now + 15000) {
+			let delta = 1 - parachute((frameState.time - now) / 15000);
+			let deltaResolution =
+				options.resolution - frameState.viewState.resolution;
+			frameState.animate = true;
+			frameState.viewState.resolution += delta * deltaResolution;
+			if (frameState.time > now + 5000 && frameState.time < now + 7000) {
+				let rotateDelta = linear((frameState.time - now - 5000) / 2000);
+				let deltaRotation = options.rotation + 2 * Math.PI;
+				frameState.viewState.rotation += deltaRotation * rotateDelta;
+			} else if (
+				frameState.time > now + 7000 &&
+				frameState.time < now + 10000
+			) {
+				let panDelta = linear((frameState.time - now - 7000) / 3000);
+				frameState.viewState.center[direction] += 500 * panDelta;
+			} else if (
+				frameState.time >= now + 10000 &&
+				frameState.time < now + 12000
+			) {
+				let panDelta = 1 - linear((frameState.time - now - 10000) / 2000);
+				frameState.viewState.center[direction] += 500 * panDelta;
+			}
+			frameState.viewHints[0] += 1;
+			return true;
+		}
+		return false;
+	};
+};
+
+const parachute = function(t) {
+	return 1 - Math.pow(1 - t, 7);
+};
+
+export const Print = function(opt_options) {
 	const options = opt_options || {};
 	const _this = this;
-	const controlInput = document.createElement("input");
-	controlInput.title = options.tipLabel || "Set rotation";
-	controlInput.type = "number";
-	controlInput.min = 0;
-	controlInput.max = 360;
-	controlInput.step = 1;
-	controlInput.value = 0;
-	controlInput.addEventListener("change", function(evt) {
-		const radianValue = (this.value / 180) * Math.PI;
-		_this
-			.getMap()
-			.getView()
-			.setRotation(radianValue);
+	const controlDiv = document.createElement("div");
+	controlDiv.className = options.class || "ol-print ol-unselectable ol-control";
+	const controlButton = document.createElement("button");
+	controlButton.textContent = options.label || "P";
+	controlButton.title = options.tipLabel || "Print map";
+	let dataURL;
+	controlButton.addEventListener("click", function(evt) {
+		_this.getMap().once("postcompose", function(evt) {
+			const canvas = evt.context.canvas;
+			dataURL = canvas.toDataURL("image/png");
+		});
+		_this.getMap().renderSync();
+		window.open(dataURL, "_blank");
+		dataURL = null;
 	});
+	controlDiv.appendChild(controlButton);
 	Control.call(this, {
-		element: controlInput,
+		element: controlDiv,
 		target: options.target
 	});
-	this.set("element", controlInput);
 };
-inherits(RotationControl, Control);
+inherits(Print, Control);
 
 export default Toolbar;

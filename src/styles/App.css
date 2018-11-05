@@ -218,7 +218,6 @@ body {
 	background-size: contain;
 	background-repeat: no-repeat;
 	background-position: 50%;
-	border-radius: 2px;
 	display: inline-block;
 	position: relative;
 	top: 50%;
@@ -242,6 +241,9 @@ body {
 }
 .layertree-buttons .deletelayer {
 	background-image: url(../assets/res/button_delete.png);
+}
+.layertree-buttons .newshp {
+	background-image: url(../assets/res/button_addshp.png);
 }
 
 /* dialogue windows */
@@ -307,6 +309,14 @@ body {
 	border: 0;
 	-moz-appearance: textfield;
 }
+.notification-bar #projection {
+	text-align: center;
+}
+.notification-bar #projection select {
+	background: none;
+	border: none;
+	outline: 0;
+}
 
 /* overlay */
 .popup {
@@ -354,4 +364,16 @@ body {
 }
 .ol-overviewmap-box {
 	border: 2px solid rgba(255, 0, 0, 0.7);
+}
+
+/* Animation */
+.ol-rocket {
+	top: 20px;
+	right: 20px;
+}
+.ol-rocket button {
+	background-image: url(../assets/res/button_rocket.png);
+	background-size: contain;
+	background-repeat: no-repeat;
+	background-position: 50%;
 }

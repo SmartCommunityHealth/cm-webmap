@@ -4,15 +4,21 @@
   "private": true,
   "dependencies": {
     "cesium": "^1.50.0",
+    "jsts": "^2.0.2",
     "ol": "^5.2.0",
+    "ol-cesium": "^2.4.0",
     "ol-ext": "^3.0.2",
     "olcs": "^2.4.0",
+    "proj4": "^2.5.0",
     "react": "^16.6.0",
     "react-bootstrap": "^0.32.4",
     "react-dom": "^16.6.0",
     "react-redux": "^5.1.0",
     "react-scripts": "2.0.5",
-    "redux": "^4.0.1"
+    "redux": "^4.0.1",
+    "shp": "0.0.1",
+    "shpjs": "^3.4.2",
+    "turf": "^3.0.14"
   },
   "scripts": {
     "start": "react-scripts start",

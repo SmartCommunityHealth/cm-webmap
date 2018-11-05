@@ -14,21 +14,25 @@ import { createStringXY } from "ol/coordinate";
 import {
 	defaults as defaultInteractions,
 	DragRotateAndZoom,
-	Select,
 	DragAndDrop
 } from "ol/interaction";
 import { OSM, Vector as VectorSource, TileWMS, XYZ } from "ol/source";
 import { Tile, Vector as VectorLayer } from "ol/layer";
 import { GeoJSON, TopoJSON, KML } from "ol/format";
 import OSMXML from "ol/format/OSMXML";
-import Projection from "ol/proj/Projection";
+import olProjection from "ol/proj/Projection";
 import { Point } from "ol/geom";
+import proj4 from "proj4";
 
 // import Cesium from "cesium/Cesium";
 // import OLCesium from "olcs/OLCesium.js";
 
 import Layertree from "./Layertree";
-import Toolbar, { Interaction, Measure, NavigationHistory } from "./Toolbar";
+import Toolbar, {
+	RocketFlight,
+	Print /*, { Interaction, Measure, NavigationHistory } */
+} from "./Toolbar";
+import { RotationControl, Projection } from "./NotificationBar";
 
 import { connect } from "react-redux";
 import { updateMap } from "../redux/actions/map-actions";
@@ -66,6 +70,21 @@ export class Mainmap extends Component {
 			// extent: Projection.getExtent()
 		});
 
+		const projControl = new Projection({
+			target: "projection"
+		});
+
+		proj4.defs(
+			"EPSG:3995",
+			"+proj=stere +lat_0=90 +lat_ts=71 +lon_0=0 +k=1 +x_0=0 +y_0=0 +datum=WGS84 +units=m +no_defs"
+		);
+		const polarProj = new olProjection({
+			code: "EPSG:3995",
+			extent: [-12382000, -12382000, 12382000, 12382000],
+			worldExtent: [-180, 60, 180, 90]
+		});
+		projControl.addProjection(polarProj);
+
 		const vectorLayer = new VectorLayer({
 			source: new VectorSource({
 				features: new GeoJSON().readFeatures(data),
@@ -99,10 +118,17 @@ export class Mainmap extends Component {
 		const map = new Map({
 			interactions: defaultInteractions().extend([
 				dragAndDrop,
-				new DragRotateAndZoom(),
-				new Select({ layers: [vectorLayer] })
+				new DragRotateAndZoom()
 			]),
 			controls: defaultControls().extend([
+				// new RocketFlight(),
+				new Print({
+					target: "toolbar"
+				}),
+				projControl,
+				new RotationControl({
+					target: "rotation"
+				}),
 				new ScaleLine(),
 				new ZoomSlider(),
 				new OverviewMap({
@@ -146,7 +172,8 @@ export class Mainmap extends Component {
 					name: "Here Maps - Normal Day",
 					description: "Here - Normal Day WTS Layer",
 					visible: false,
-					wrapX: false
+					wrapX: false,
+					crossOrigin: "anonymous"
 				}),
 				new Tile({
 					source: new TileWMS({
@@ -158,13 +185,15 @@ export class Mainmap extends Component {
 					}),
 					name: "Natural Earth Land",
 					visible: false,
-					wrapX: false
+					wrapX: false,
+					crossOrigin: "anonymous"
 				}),
 				new Tile({
 					name: "Open Street Map",
 					source: new OSM(),
 					visible: true,
-					wrapX: false
+					wrapX: false,
+					crossOrigin: "anonymous"
 				}),
 				vectorLayer
 			],
@@ -197,18 +226,18 @@ export class Mainmap extends Component {
 			.addExtentControls();
 		// .addControl(new NavigationHistory());
 
-		map
-			.getLayers()
-			.item(1)
-			.getSource()
-			.on("change", function(evt) {
-				if (this.getState() === "ready") {
-					map
-						.getLayers()
-						.item(1)
-						.buildHeaders();
-				}
-			});
+		// map
+		// 	.getLayers()
+		// 	.item(1)
+		// 	.getSource()
+		// 	.on("change", function(evt) {
+		// 		if (this.getState() === "ready") {
+		// 			map
+		// 				.getLayers()
+		// 				.item(1)
+		// 				.buildHeaders();
+		// 		}
+		// 	});
 
 		map.getView().on("propertychange", function(evt) {
 			const projExtent = this.getProjection().getExtent();
@@ -252,40 +281,40 @@ export class Mainmap extends Component {
 
 		// Toolbar.addControl(measureControl);
 
-		const flyTo = (location, done) => {
-			let duration = 2000;
-			let zoom = view.getZoom();
-			let parts = 2;
-			let called = false;
-			function callback(complete) {
-				--parts;
-				if (called) {
-					return;
-				}
-				if (parts === 0 || !complete) {
-					called = true;
-					done(complete);
-				}
-			}
-			view.animate(
-				{
-					center: location,
-					duration: duration
-				},
-				callback
-			);
-			view.animate(
-				{
-					zoom: zoom - 1,
-					duration: duration / 2
-				},
-				{
-					zoom: zoom,
-					duration: duration / 2
-				},
-				callback
-			);
-		};
+		// const flyTo = (location, done) => {
+		// 	let duration = 2000;
+		// 	let zoom = view.getZoom();
+		// 	let parts = 2;
+		// 	let called = false;
+		// 	function callback(complete) {
+		// 		--parts;
+		// 		if (called) {
+		// 			return;
+		// 		}
+		// 		if (parts === 0 || !complete) {
+		// 			called = true;
+		// 			done(complete);
+		// 		}
+		// 	}
+		// 	view.animate(
+		// 		{
+		// 			center: location,
+		// 			duration: duration
+		// 		},
+		// 		callback
+		// 	);
+		// 	view.animate(
+		// 		{
+		// 			zoom: zoom - 1,
+		// 			duration: duration / 2
+		// 		},
+		// 		{
+		// 			zoom: zoom,
+		// 			duration: duration / 2
+		// 		},
+		// 		callback
+		// 	);
+		// };
 
 		// onClick("fly-to-bern", function() {
 		// 	flyTo(bern, function() {});
