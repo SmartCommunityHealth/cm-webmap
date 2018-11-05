@@ -24,6 +24,7 @@ import OSMXML from "ol/format/OSMXML";
 import olProjection from "ol/proj/Projection";
 import { Point } from "ol/geom";
 import proj4 from "proj4";
+import { Style, Icon } from "ol/style";
 
 // import Cesium from "cesium/Cesium";
 // import OLCesium from "olcs/OLCesium.js";
@@ -32,7 +33,8 @@ import Layertree from "./Layertree";
 import Toolbar, {
 	RocketFlight,
 	Print,
-	Turf /*, { Interaction, Measure, NavigationHistory } */
+	Turf,
+	Cesium /*, { Interaction, Measure, NavigationHistory } */
 } from "./Toolbar";
 import { RotationControl, Projection } from "./NotificationBar";
 
@@ -109,6 +111,14 @@ export class Mainmap extends Component {
 			}),
 			updateWhileAnimating: true,
 			updateWhileInteracting: true,
+			style: new Style({
+				image: new Icon({
+					anchor: [0.5, 46],
+					anchorXUnits: "fraction",
+					anchorYUnits: "pixels",
+					src: "../assets/res/marker.png"
+				})
+			}),
 			name:
 				"World Capitals" /*,
 			headers: {
@@ -139,6 +149,9 @@ export class Mainmap extends Component {
 			]),
 			controls: defaultControls().extend([
 				// new RocketFlight(),
+				new Cesium({
+					target: "toolbar"
+				}),
 				new Print({
 					target: "toolbar"
 				}),
@@ -237,7 +250,7 @@ export class Mainmap extends Component {
 
 		map
 			.getLayers()
-			.item(4)
+			.item(3)
 			.getSource()
 			.once("change", function(evt) {
 				if (this.getState() === "ready") {

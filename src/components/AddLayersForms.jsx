@@ -51,7 +51,12 @@ export class AddLayersForms extends Component {
 								<tr>
 									<td>Layer name:</td>
 									<td>
-										<select id="wmslayer" name="layer" required="required" />
+										<select
+											className="form-control"
+											id="wmslayer"
+											name="layer"
+											required="required"
+										/>
 									</td>
 								</tr>
 								<tr>
@@ -67,7 +72,12 @@ export class AddLayersForms extends Component {
 								<tr>
 									<td>Format:</td>
 									<td>
-										<select id="wmsformat" name="format" required="required" />
+										<select
+											className="form-control"
+											id="wmsformat"
+											name="format"
+											required="required"
+										/>
 									</td>
 								</tr>
 								<tr>
@@ -219,7 +229,13 @@ export class AddLayersForms extends Component {
 								<tr>
 									<td>Format:</td>
 									<td>
-										<select id="vectorformat" name="format" required="required">
+										<select
+											className="form-control"
+											multiple
+											id="vectorformat"
+											name="format"
+											required="required"
+										>
 											<option value="geojson">GeoJSON</option>
 											<option value="topojson">TopoJSON</option>
 											<option value="kml">KML</option>
@@ -278,7 +294,12 @@ export class AddLayersForms extends Component {
 								<tr>
 									<td>Available Shapefiles:</td>
 									<td>
-										<select id="availableshps" name="availableshps">
+										<select
+											className="form-control"
+											multiple
+											id="availableshps"
+											name="availableshps"
+										>
 											<option value="">None</option>
 											<option value="tshwane_boundary.zip">
 												Tshwane Boundary
@@ -379,6 +400,7 @@ export class AddLayersForms extends Component {
 											name="type"
 											required="required"
 											className="form-control"
+											multiple
 										>
 											<option value="point">Point</option>
 											<option value="line">Line</option>

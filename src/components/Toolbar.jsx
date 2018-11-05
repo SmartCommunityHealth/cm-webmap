@@ -26,7 +26,10 @@ import { Point, Polygon, LineString } from "ol/geom";
 import SimpleGeometry from "ol/geom/SimpleGeometry";
 import { linear, easeIn } from "ol/easing";
 import { GeoJSON } from "ol/format";
+
 import turf from "turf";
+import olcs from "ol-cesium";
+import CesiumIm from "cesium";
 
 export class Toolbar extends Component {
 	"use strict";
@@ -1207,5 +1210,40 @@ export const Turf = function(opt_options) {
 	controlDiv.appendChild(selfIntersectButton);
 };
 inherits(Turf, Control);
+
+export const Cesium = function(opt_options) {
+	const options = opt_options || {};
+	const _this = this;
+	const controlDiv = document.createElement("div");
+	controlDiv.className =
+		options.class || "ol-cesium ol-unselectable ol-control";
+	setTimeout(function() {
+		const ol3d = new olcs.OLCesium({ map: _this.getMap() });
+		const scene = ol3d.getCesiumScene();
+		scene.terrainProvider = new CesiumIm.CesiumTerrainProvider({
+			url: "http://assets.agi.com/stk-terrain/world"
+		});
+		_this.set("cesium", ol3d);
+	}, 0);
+	const controlButton = document.createElement("button");
+	controlButton.textContent = "3D";
+	controlButton.title = "Toggle 3D rendering";
+	controlButton.addEventListener("click", function(evt) {
+		const cesium = _this.get("cesium");
+		if (cesium.getEnabled()) {
+			cesium.setBlockCesiumRendering(true);
+			cesium.setEnabled(false);
+		} else {
+			cesium.setBlockCesiumRendering(false);
+			cesium.setEnabled(true);
+		}
+	});
+	controlDiv.appendChild(controlButton);
+	Control.call(this, {
+		element: controlDiv,
+		target: options.target
+	});
+};
+inherits(Cesium, Control);
 
 export default Toolbar;

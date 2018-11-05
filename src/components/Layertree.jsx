@@ -514,10 +514,9 @@ Layertree.prototype.addWfsLayer = function(form) {
 	};
 	url =
 		url +
-		"SERVICE=WFS&REQUEST=GetFeature&TYPENAME=" +
+		"service=WFS&version=1.0.0&request=GetFeature&typeName=cadmapping:" +
 		typeName +
-		"&VERSION=1.0.0&SRSNAME=" +
-		proj;
+		"&outputFormat=application%2Fjson";
 	//request.open('GET', '../../../cgi-bin/proxy.py?' + encodeURIComponent(url));
 	request.open("GET", url);
 	request.send();
@@ -597,28 +596,22 @@ Layertree.prototype.addShpLayer = function(form) {
 	const sourceFormat = new GeoJSON();
 	const source = new VectorSource();
 
-	console.log("formSelectValue:", formSelect.value);
-
 	if (formSelect.value !== "") {
-		async function getFile() {
-			const xhr = new XMLHttpRequest();
-			xhr.open("GET", `../src/assets/res/${formSelect.value}`);
-			xhr.responseType = "blob";
-			xhr.onload = function() {
-				file = xhr.respopnse;
-				console.log("fileInside: ", file);
-			};
-			xhr.send();
-			return Promise.resolve(file);
-		}
-		getFile().then(processFile(file));
+		const shpData = `../assets/res/${formSelect.value}`;
+		const dataProjection =
+			formProjection.value ||
+			sourceFormat.readProjection(shpData) ||
+			currentProj;
+		shpjs.getShapefile(shpData).then(function(geojson) {
+			source.addFeatures(
+				sourceFormat.readFeatures(geojson, {
+					dataProjection: dataProjection,
+					featureProjection: currentProj
+				})
+			);
+		});
 	} else {
 		file = formFile.files[0];
-		processFile(file);
-	}
-
-	function processFile(file) {
-		console.log("file: ", file);
 		fr.onload = function(evt) {
 			const shpData = evt.target.result;
 			const dataProjection =
@@ -636,6 +629,7 @@ Layertree.prototype.addShpLayer = function(form) {
 		};
 		fr.readAsArrayBuffer(file);
 	}
+
 	shpForm.reset();
 
 	var layer = new VectorLayer({

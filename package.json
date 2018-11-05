@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
-    "cesium": "^1.50.0",
+    "cesium": "^1.51.0",
     "jsts": "^2.0.2",
     "ol": "^5.2.0",
     "ol-cesium": "^2.4.0",
