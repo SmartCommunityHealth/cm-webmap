@@ -21,6 +21,7 @@ This is a web mapping application written in react.js. It uses geoserver as the 
 The application uses the following datasets out of the box:
 i. OSM vector data
 ii. 5cm gsd imagery of Pretoria.
+iii. Landsat 7 Satelite imagery
 
 ### Setup Process:
 
@@ -48,15 +49,17 @@ This is how you use the application:
 3. React Redux: React-Redux is the official React binding for Redux. It lets your React components read data from a Redux store, and dispatch actions to the store to update data. https://react-redux.js.org/
 4. React Bootstrap: The most popular front-end framework, Bootstrap rebuilt for React. https://react-bootstrap.github.io/
 5. Openlayers: OpenLayers makes it easy to put a dynamic map in any web page. It can display map tiles, vector data and markers loaded from any source. OpenLayers has been developed to further the use of geographic information of all kinds. http://openlayers.org/
+6. Shapefile.js: Library for converting shapefiles to GeoJSON. https://github.com/calvinmetcalf/shapefile-js
+7. Turf: Library for performing advanced geospatial analysis for browsers and Node.js. http://turfjs.org/
 
 ### Known Bugs and Limitations:
 
 1. No tests have been written.
 2. No error handling has been written.
-3. Not enough time to work on the UI.
-4. Layer name moves to the bottom of the div when the layer is selected.
-5. Attributs popup doesn't display all the attributes of a layer.6.
-6. The button for categorised styling doesn't work for now.
+3. Importing of satelite and aerial imagery not implemented.
+4. Exporting of shapefiles not implemented.
+5. 3D rendering of globe view using cesium not implemented.
+6. Issue with zooming to the extent of a layer not resolved yet.
 
 The following are planned implementations:
 
@@ -66,7 +69,8 @@ The following are planned implementations:
 
 ### Areas of Improvement:
 
-1. With more time the UI definitely needs more work to look more appealing
+1. With more time the UI definitely needs more work to look more appealing,
+2. Bug fixes
 
 License:
 This software is licensed under the GNU Affero General Public License Version 3, 19 November 2007. Find more information in the LICENSE file.
