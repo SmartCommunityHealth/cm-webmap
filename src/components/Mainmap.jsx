@@ -33,8 +33,7 @@ import Layertree from "./Layertree";
 import Toolbar, {
 	RocketFlight,
 	Print,
-	Turf,
-	Cesium /*, { Interaction, Measure, NavigationHistory } */
+	Turf /*, { Interaction, Measure, NavigationHistory } */
 } from "./Toolbar";
 import { RotationControl, Projection } from "./NotificationBar";
 
@@ -149,9 +148,9 @@ export class Mainmap extends Component {
 			]),
 			controls: defaultControls().extend([
 				// new RocketFlight(),
-				new Cesium({
-					target: "toolbar"
-				}),
+				// new Cesium({
+				// 	target: "toolbar"
+				// }),
 				new Print({
 					target: "toolbar"
 				}),
