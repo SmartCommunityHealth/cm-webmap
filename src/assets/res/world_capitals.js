@@ -1,4 +1,4 @@
-export const data = {
+export const capitalsdata = {
 	type: "FeatureCollection",
 
 	crs: {

@@ -273,7 +273,7 @@ export class AddLayersForms extends Component {
 						}}
 					>
 						<h3>Add Shapefile</h3>
-						<table>
+						<Table>
 							<tbody>
 								<tr>
 									<td>Available Shapefiles:</td>
@@ -301,7 +301,6 @@ export class AddLayersForms extends Component {
 											id="shpfile"
 											name="shpfile"
 											type="file"
-											required="required"
 											accept=".zip"
 										/>
 									</td>
@@ -345,7 +344,7 @@ export class AddLayersForms extends Component {
 									</td>
 								</tr>
 							</tbody>
-						</table>
+						</Table>
 					</form>
 				</div>
 

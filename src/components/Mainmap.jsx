@@ -1,6 +1,6 @@
 import React, { Component } from "react";
 
-import { Map, View } from "ol";
+import { Map, View, Collection } from "ol";
 import {
 	ScaleLine,
 	OverviewMap,
@@ -14,7 +14,8 @@ import { createStringXY } from "ol/coordinate";
 import {
 	defaults as defaultInteractions,
 	DragRotateAndZoom,
-	DragAndDrop
+	DragAndDrop,
+	Modify
 } from "ol/interaction";
 import { OSM, Vector as VectorSource, TileWMS, XYZ } from "ol/source";
 import { Tile, Vector as VectorLayer } from "ol/layer";
@@ -30,7 +31,8 @@ import proj4 from "proj4";
 import Layertree from "./Layertree";
 import Toolbar, {
 	RocketFlight,
-	Print /*, { Interaction, Measure, NavigationHistory } */
+	Print,
+	Turf /*, { Interaction, Measure, NavigationHistory } */
 } from "./Toolbar";
 import { RotationControl, Projection } from "./NotificationBar";
 
@@ -39,7 +41,8 @@ import { updateMap } from "../redux/actions/map-actions";
 import { updateLayertree } from "../redux/actions/layertree-actions";
 import { updateToolbar } from "../redux/actions/toolbar-actions";
 
-import { data } from "../assets/res/world_countries";
+import { countriesdata } from "../assets/res/world_countries";
+import { capitalsdata } from "../assets/res/world_capitals";
 
 // window.Cesium = Cesium;
 
@@ -85,15 +88,29 @@ export class Mainmap extends Component {
 		});
 		projControl.addProjection(polarProj);
 
-		const vectorLayer = new VectorLayer({
+		const countries = new VectorLayer({
 			source: new VectorSource({
-				features: new GeoJSON().readFeatures(data),
+				features: new GeoJSON().readFeatures(countriesdata),
 				wrapX: false
 			}),
 			updateWhileAnimating: true,
 			updateWhileInteracting: true,
 			name:
 				"World Countries" /*,
+			headers: {
+				pop_est: "integer",
+				gdp_md_est: "integer"
+			}*/
+		});
+		const capitals = new VectorLayer({
+			source: new VectorSource({
+				features: new GeoJSON().readFeatures(capitalsdata),
+				wrapX: false
+			}),
+			updateWhileAnimating: true,
+			updateWhileInteracting: true,
+			name:
+				"World Capitals" /*,
 			headers: {
 				pop_est: "integer",
 				gdp_md_est: "integer"
@@ -151,6 +168,9 @@ export class Mainmap extends Component {
 					coordinateFormat: createStringXY(4),
 					projection: "EPSG:4326",
 					target: "coordinates"
+				}),
+				new Turf({
+					target: "toolbar"
 				})
 			]),
 			layers: [
@@ -195,7 +215,8 @@ export class Mainmap extends Component {
 					wrapX: false,
 					crossOrigin: "anonymous"
 				}),
-				vectorLayer
+				countries,
+				capitals
 			],
 			loadTilesWhileAnimating: true,
 			loadTilesWhileInteracting: true,
@@ -211,7 +232,22 @@ export class Mainmap extends Component {
 			.createRegistry(map.getLayers().item(0))
 			.createRegistry(map.getLayers().item(1))
 			.createRegistry(map.getLayers().item(2))
-			.createRegistry(map.getLayers().item(3));
+			.createRegistry(map.getLayers().item(3))
+			.createRegistry(map.getLayers().item(4));
+
+		map
+			.getLayers()
+			.item(4)
+			.getSource()
+			.once("change", function(evt) {
+				if (this.getState() === "ready") {
+					map.addInteraction(
+						new Modify({
+							features: new Collection(evt.target.getFeatures())
+						})
+					);
+				}
+			});
 
 		const toolbar = new Toolbar({
 			map: map,

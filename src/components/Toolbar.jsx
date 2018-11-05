@@ -25,6 +25,8 @@ import { Style, Circle, Fill, Stroke } from "ol/style";
 import { Point, Polygon, LineString } from "ol/geom";
 import SimpleGeometry from "ol/geom/SimpleGeometry";
 import { linear, easeIn } from "ol/easing";
+import { GeoJSON } from "ol/format";
+import turf from "turf";
 
 export class Toolbar extends Component {
 	"use strict";
@@ -1105,5 +1107,105 @@ export const Print = function(opt_options) {
 	});
 };
 inherits(Print, Control);
+
+export const Turf = function(opt_options) {
+	const options = opt_options || {};
+	const _this = this;
+	const controlDiv = document.createElement("div");
+	controlDiv.className = options.class || "ol-turf ol-unselectable ol-control";
+	const bufferButton = document.createElement("button");
+	bufferButton.textContent = "B";
+	bufferButton.title = "Buffer selected layer";
+	bufferButton.addEventListener("click", function(evt) {
+		const layer = _this.getMap().get("selectedLayer");
+		const units = _this
+			.getMap()
+			.getView()
+			.getProjection()
+			.getUnits();
+		if (layer instanceof VectorLayer) {
+			const parser = new GeoJSON();
+			const geojson = parser.writeFeaturesObject(
+				layer.getSource().getFeatures()
+			);
+			const buffered = turf.buffer(geojson, 10000, units);
+			const bufferedLayer = new VectorLayer({
+				source: new VectorSource({
+					features: parser.readFeatures(buffered)
+				}),
+				name: "Buffer result"
+			});
+			_this.getMap().addLayer(bufferedLayer);
+		}
+	});
+	controlDiv.appendChild(bufferButton);
+	// controlDiv.appendChild(selfIntersectButton);
+	Control.call(this, {
+		element: controlDiv,
+		target: options.target
+	});
+
+	const mergeButton = document.createElement("button");
+	mergeButton.textContent = "M";
+	mergeButton.title = "Merge selected layer";
+	mergeButton.addEventListener("click", function(evt) {
+		const layer = _this.getMap().get("selectedLayer");
+		if (layer instanceof VectorLayer) {
+			const parser = new GeoJSON();
+			const geojson = parser.writeFeaturesObject(
+				layer.getSource().getFeatures()
+			);
+			const merged = turf.combine(geojson);
+			const mergedLayer = new VectorLayer({
+				source: new VectorSource({
+					features: parser.readFeatures(merged)
+				}),
+				name: "Merge result"
+			});
+			_this.getMap().addLayer(mergedLayer);
+		}
+	});
+	controlDiv.appendChild(mergeButton);
+
+	const selfIntersectButton = document.createElement("button");
+	selfIntersectButton.textContent = "S";
+	selfIntersectButton.title = "Check self intersections";
+	selfIntersectButton.addEventListener("click", function(evt) {
+		const layer = _this.getMap().get("selectedLayer");
+		if (layer instanceof VectorLayer) {
+			const parser = new GeoJSON();
+			const selfIntersectLayer = new VectorLayer({
+				source: new VectorSource(),
+				name: "Self intersects"
+			});
+			_this.getMap().addLayer(selfIntersectLayer);
+			const features = layer.getSource().getFeatures();
+			for (var i = 0; i < features.length; i += 1) {
+				const geojson = parser.writeFeatureObject(features[i]);
+				if (geojson.geometry.type === "MultiPolygon") {
+					for (var j = 0; j < geojson.geometry.coordinates.length; j += 1) {
+						const selfIntersect = turf.kinks(
+							turf.polygon(geojson.geometry.coordinates[j])
+						);
+						if (selfIntersect.intersections.features.length > 0) {
+							selfIntersectLayer
+								.getSource()
+								.addFeatures(parser.readFeatures(selfIntersect.intersections));
+						}
+					}
+				} else if (geojson.geometry.type === "Polygon") {
+					const selfIntersect = turf.kinks(geojson);
+					if (selfIntersect.intersections.features.length > 0) {
+						selfIntersectLayer
+							.getSource()
+							.addFeatures(parser.readFeatures(selfIntersect.intersections));
+					}
+				}
+			}
+		}
+	});
+	controlDiv.appendChild(selfIntersectButton);
+};
+inherits(Turf, Control);
 
 export default Toolbar;

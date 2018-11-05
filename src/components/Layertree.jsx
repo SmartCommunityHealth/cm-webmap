@@ -60,6 +60,10 @@ class Layertree extends Component {
 			controlDiv.appendChild(
 				this.createButton("addwfs", "Add WFS Layer", "addlayer")
 			);
+			containerDiv.appendChild(controlDiv);
+			controlDiv.appendChild(
+				this.createButton("newshp", "Add Shape Layer", "addlayer")
+			);
 			controlDiv.appendChild(
 				this.createButton("addvector", "Add Vector Layer", "addlayer")
 			);
@@ -69,10 +73,6 @@ class Layertree extends Component {
 			containerDiv.appendChild(controlDiv);
 			controlDiv.appendChild(
 				this.createButton("newvector", "New Vector Layer", "addlayer")
-			);
-			containerDiv.appendChild(controlDiv);
-			controlDiv.appendChild(
-				this.createButton("newshp", "New Shape Layer", "addlayer")
 			);
 
 			/* Create the div that will contain the layers and add it to the
@@ -584,39 +584,60 @@ Layertree.prototype.addVectorLayer = function(form) {
 };
 
 Layertree.prototype.addShpLayer = function(form) {
+	const shpForm = document.getElementById("addShp_form");
 	const formSelect = document.getElementById("availableshps");
 	const formFile = document.getElementById("shpfile");
-
-	// if (formSelect.value === ""){
-	// 	formFile.file = ""
-	// }
-
 	const formProjection = document.getElementById("vectorprojection");
 	const formDisplayname = document.getElementById("shpdisplayname");
 
-	const file = formFile.files[0];
-	console.log("shapefile: ", file);
+	let file = new Blob();
+
 	const currentProj = this.map.getView().getProjection();
 	const fr = new FileReader();
 	const sourceFormat = new GeoJSON();
 	const source = new VectorSource();
 
-	fr.onload = function(evt) {
-		const shpData = evt.target.result;
-		const dataProjection =
-			formProjection.value ||
-			sourceFormat.readProjection(shpData) ||
-			currentProj;
-		shpjs.getShapefile(shpData).then(function(geojson) {
-			source.addFeatures(
-				sourceFormat.readFeatures(geojson, {
-					dataProjection: dataProjection,
-					featureProjection: currentProj
-				})
-			);
-		});
-	};
-	fr.readAsArrayBuffer(file);
+	console.log("formSelectValue:", formSelect.value);
+
+	if (formSelect.value !== "") {
+		async function getFile() {
+			const xhr = new XMLHttpRequest();
+			xhr.open("GET", `../src/assets/res/${formSelect.value}`);
+			xhr.responseType = "blob";
+			xhr.onload = function() {
+				file = xhr.respopnse;
+				console.log("fileInside: ", file);
+			};
+			xhr.send();
+			return Promise.resolve(file);
+		}
+		getFile().then(processFile(file));
+	} else {
+		file = formFile.files[0];
+		processFile(file);
+	}
+
+	function processFile(file) {
+		console.log("file: ", file);
+		fr.onload = function(evt) {
+			const shpData = evt.target.result;
+			const dataProjection =
+				formProjection.value ||
+				sourceFormat.readProjection(shpData) ||
+				currentProj;
+			shpjs.getShapefile(shpData).then(function(geojson) {
+				source.addFeatures(
+					sourceFormat.readFeatures(geojson, {
+						dataProjection: dataProjection,
+						featureProjection: currentProj
+					})
+				);
+			});
+		};
+		fr.readAsArrayBuffer(file);
+	}
+	shpForm.reset();
+
 	var layer = new VectorLayer({
 		source: source,
 		name: formDisplayname.value,
@@ -641,6 +662,7 @@ Layertree.prototype.addSelectEvent = function(node, isChild) {
 		this.selectedLayer = targetNode;
 		targetNode.classList.add("active");
 		this.selectEventEmitter.changed();
+		this.map.set("selectedLayer", this.getLayerById(targetNode.id));
 	});
 	return node;
 };
