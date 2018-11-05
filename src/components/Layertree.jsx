@@ -57,9 +57,9 @@ class Layertree extends Component {
 			controlDiv.appendChild(
 				this.createButton("addwms", "Add WMS Layer", "addlayer")
 			);
-			controlDiv.appendChild(
-				this.createButton("addwfs", "Add WFS Layer", "addlayer")
-			);
+			// controlDiv.appendChild(
+			// 	this.createButton("addwfs", "Add WFS Layer", "addlayer")
+			// );
 			containerDiv.appendChild(controlDiv);
 			controlDiv.appendChild(
 				this.createButton("newshp", "Add Shape Layer", "addlayer")
@@ -598,11 +598,13 @@ Layertree.prototype.addShpLayer = function(form) {
 
 	if (formSelect.value !== "") {
 		const shpData = `../assets/res/${formSelect.value}`;
+		console.log("shpData", shpData);
 		const dataProjection =
 			formProjection.value ||
-			sourceFormat.readProjection(shpData) ||
+			// sourceFormat.readProjection(shpData) ||
 			currentProj;
-		shpjs.getShapefile(shpData).then(function(geojson) {
+		shpjs.getShapefile(shpData).then(geojson => {
+			console.log("geojson: ", geojson);
 			source.addFeatures(
 				sourceFormat.readFeatures(geojson, {
 					dataProjection: dataProjection,

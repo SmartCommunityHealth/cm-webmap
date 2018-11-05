@@ -938,38 +938,34 @@ Toolbar.prototype.addExtentControls = function() {
 		tipLabel: "Zoom to full extent"
 	});
 
-	let ztle = [];
-	this.layertree.selectEventEmitter.on("change", () => {
-		const layer = this.layertree.getLayerById(this.layertree.selectedLayer.id);
-
-		if (layer.getSource().getExtent()) {
-			ztle = layer.getSource().getExtent();
-		}
-	});
-
 	const zoomToLayer = new ZoomToExtent({
 		class: "ol-zoom-layer ol-unselectable ol-control",
 		tipLabel: "Zoom to layer extent",
-		extent: ztle
+		extent: () => {
+			var source = this.layertree
+				.getLayerById(this.layertree.selectedLayer.id)
+				.getSource();
+			if (source.getExtent()) {
+				return source.getExtent();
+			}
+			return false;
+		}
 	});
 
-	let ztse = [];
-	if (this.selectInteraction) {
-		const features = this.selectInteraction.getFeatures();
-		if (features.getLength() === 1) {
-			const geom = features.item(0).getGeometry();
-			if (geom instanceof SimpleGeometry) {
-				return geom;
-			}
-			ztse = geom.getExtent();
-			console.log("ztse: ", ztse);
-		}
-	}
-
-	const zoomToSelected = new ZoomToExtent({
+	var zoomToSelected = new ZoomToExtent({
 		class: "ol-zoom-selected ol-unselectable ol-control",
 		tipLabel: "Zoom to selected feature",
-		extent: ztse
+		extentFunction: () => {
+			var features = this.selectInteraction.getFeatures();
+			if (features.getLength() === 1) {
+				var geom = features.item(0).getGeometry();
+				if (geom instanceof SimpleGeometry) {
+					return geom;
+				}
+				return geom.getExtent();
+			}
+			return false;
+		}
 	});
 
 	this.addControl(zoomFull)

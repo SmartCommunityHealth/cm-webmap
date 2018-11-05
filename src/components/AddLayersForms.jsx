@@ -83,7 +83,12 @@ export class AddLayersForms extends Component {
 								<tr>
 									<td>Tiled:</td>
 									<td>
-										<FormControl id="wmstiled" type="checkbox" name="tiled" />
+										<FormControl
+											id="wmstiled"
+											type="checkbox"
+											name="tiled"
+											defaultChecked={true}
+										/>
 									</td>
 								</tr>
 								<tr>
