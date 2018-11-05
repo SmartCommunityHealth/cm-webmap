@@ -71,6 +71,7 @@ The following are planned implementations:
 
 1. With more time the UI definitely needs more work to look more appealing,
 2. Bug fixes
+3. Create documentation with JSDoc.
 
 License:
 This software is licensed under the GNU Affero General Public License Version 3, 19 November 2007. Find more information in the LICENSE file.
