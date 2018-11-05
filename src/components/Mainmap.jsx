@@ -1,6 +1,6 @@
 import React, { Component } from "react";
 
-import { Map, View, Overlay } from "ol";
+import { Map, View } from "ol";
 import {
 	ScaleLine,
 	OverviewMap,
@@ -17,16 +17,18 @@ import {
 	Select,
 	DragAndDrop
 } from "ol/interaction";
-import { OSM, Vector as VectorSource } from "ol/source";
+import { OSM, Vector as VectorSource, TileWMS, XYZ } from "ol/source";
 import { Tile, Vector as VectorLayer } from "ol/layer";
 import { GeoJSON, TopoJSON, KML } from "ol/format";
 import OSMXML from "ol/format/OSMXML";
+import Projection from "ol/proj/Projection";
+import { Point } from "ol/geom";
 
 // import Cesium from "cesium/Cesium";
 // import OLCesium from "olcs/OLCesium.js";
 
 import Layertree from "./Layertree";
-import Toolbar, { Interaction, Measure } from "./Toolbar";
+import Toolbar, { Interaction, Measure, NavigationHistory } from "./Toolbar";
 
 import { connect } from "react-redux";
 import { updateMap } from "../redux/actions/map-actions";
@@ -61,12 +63,16 @@ export class Mainmap extends Component {
 			projection: "EPSG:4326",
 			center: [0, 0],
 			zoom: 4
+			// extent: Projection.getExtent()
 		});
 
 		const vectorLayer = new VectorLayer({
 			source: new VectorSource({
-				features: new GeoJSON().readFeatures(data)
+				features: new GeoJSON().readFeatures(data),
+				wrapX: false
 			}),
+			updateWhileAnimating: true,
+			updateWhileInteracting: true,
 			name:
 				"World Countries" /*,
 			headers: {
@@ -105,7 +111,7 @@ export class Mainmap extends Component {
 						new Tile({
 							name: "OSM",
 							title: "Open Street Map",
-							source: new OSM()
+							source: new OSM({ wrapX: false })
 						})
 					],
 					collapsible: false,
@@ -123,12 +129,47 @@ export class Mainmap extends Component {
 			]),
 			layers: [
 				new Tile({
+					preload: Infinity,
+					source: new XYZ({
+						url:
+							"https://{1-4}.base.maps.cit.api.here.com" +
+							"/maptile/2.1/maptile/newest/normal.day/{z}/{x}/{y}/256/png" +
+							"?app_id=YjdDTdj88GNyfakDOdHb&app_code=oGkX5PmOR795UlljwC7NCg",
+						attributions:
+							"Map Tiles &copy; " +
+							new Date().getFullYear() +
+							" " +
+							'<a href="http://developer.here.com">HERE</a>'
+					}),
+					type: "base",
+					title: "Normal Day",
+					name: "Here Maps - Normal Day",
+					description: "Here - Normal Day WTS Layer",
+					visible: false,
+					wrapX: false
+				}),
+				new Tile({
+					source: new TileWMS({
+						url: "http://demo.opengeo.org/geoserver/wms",
+						params: {
+							layers: "ne_50m_land",
+							format: "image/png"
+						}
+					}),
+					name: "Natural Earth Land",
+					visible: false,
+					wrapX: false
+				}),
+				new Tile({
 					name: "Open Street Map",
-					source: new OSM()
+					source: new OSM(),
+					visible: true,
+					wrapX: false
 				}),
 				vectorLayer
 			],
 			loadTilesWhileAnimating: true,
+			loadTilesWhileInteracting: true,
 			view: view,
 			target: "map"
 		});
@@ -139,7 +180,9 @@ export class Mainmap extends Component {
 			messages: "messageBar"
 		})
 			.createRegistry(map.getLayers().item(0))
-			.createRegistry(map.getLayers().item(1));
+			.createRegistry(map.getLayers().item(1))
+			.createRegistry(map.getLayers().item(2))
+			.createRegistry(map.getLayers().item(3));
 
 		const toolbar = new Toolbar({
 			map: map,
@@ -148,13 +191,11 @@ export class Mainmap extends Component {
 		})
 			.addControl(new Zoom())
 			.addControl(new FullScreen())
-			.addControl(
-				new Interaction({
-					interaction: new Select()
-				})
-			)
+			.addInfoControl()
 			.addSelectControls()
-			.addEditingToolBar();
+			.addEditingToolBar()
+			.addExtentControls();
+		// .addControl(new NavigationHistory());
 
 		map
 			.getLayers()
@@ -168,6 +209,32 @@ export class Mainmap extends Component {
 						.buildHeaders();
 				}
 			});
+
+		map.getView().on("propertychange", function(evt) {
+			const projExtent = this.getProjection().getExtent();
+			if (projExtent) {
+				const currentCenter = this.getCenter();
+				const currentResolution = this.getResolution();
+				const mapSize = map.getSize();
+				const newExtent = [
+					projExtent[0] + (currentResolution * mapSize[0]) / 2,
+					projExtent[1] + (currentResolution * mapSize[1]) / 2,
+					projExtent[2] - (currentResolution * mapSize[0]) / 2,
+					projExtent[3] - (currentResolution * mapSize[1]) / 2
+				];
+				if (!new Point(currentCenter).intersectsExtent(newExtent)) {
+					currentCenter[0] = Math.min(
+						Math.max(currentCenter[0], newExtent[0]),
+						newExtent[2]
+					);
+					currentCenter[1] = Math.min(
+						Math.max(currentCenter[1], newExtent[1]),
+						newExtent[3]
+					);
+					this.setCenter(currentCenter);
+				}
+			}
+		});
 
 		// var measureControl = new Interaction({
 		// 	label: " ",
@@ -227,105 +294,6 @@ export class Mainmap extends Component {
 		// const ol3d = new OLCesium({ map: map });
 		// ol3d.setEnabled(true);
 
-		map.on("click", function(evt) {
-			const pixel = evt.pixel;
-			const coord = evt.coordinate;
-			const attributeForm = document.createElement("form");
-			attributeForm.className = "popup";
-			this.getOverlays().clear();
-
-			let firstFeature = true;
-
-			function createRow(attributeName, attributeValue, type) {
-				const rowElem = document.createElement("div");
-				const attributeSpan = document.createElement("span");
-				attributeSpan.textContent = attributeName + ": ";
-				rowElem.appendChild(attributeSpan);
-				const attributeInput = document.createElement("input");
-				attributeInput.className = "form-control form-control-sm";
-				attributeInput.name = attributeName;
-				attributeInput.type = "text";
-				if (type !== "string") {
-					attributeInput.type = "number";
-					attributeInput.step = type === "float" ? 1e-6 : 1;
-				}
-				attributeInput.value = attributeValue;
-				rowElem.appendChild(attributeInput);
-				return rowElem;
-			}
-
-			this.forEachFeatureAtPixel(
-				pixel,
-				(feature, layer) => {
-					if (firstFeature) {
-						const attributes = feature.getProperties();
-						const headers = layer.get("headers");
-						for (var i in attributes) {
-							if (typeof attributes[i] !== "object" && i in headers) {
-								attributeForm.appendChild(
-									createRow(i, attributes[i], headers[i])
-								);
-							}
-						}
-						if (attributeForm.children.length > 0) {
-							const saveAttributes = document.createElement("input");
-							saveAttributes.type = "submit";
-							saveAttributes.className = "save";
-							saveAttributes.value = "";
-							attributeForm.addEventListener("submit", function(evt) {
-								evt.preventDefault();
-								let attributeList = {};
-								let inputList = [].slice.call(this.querySelectorAll("input"));
-								for (var i = 0; i < inputList.length; i += 1) {
-									switch (headers[inputList[i].name]) {
-										case "string":
-											attributeList[inputList[i].name] = inputList[
-												i
-											].value.toString();
-											break;
-										case "integer":
-											attributeList[inputList[i].name] = parseInt(
-												inputList[i].value
-											);
-											break;
-										case "float":
-											attributeList[inputList[i].name] = parseFloat(
-												inputList[i].value
-											);
-											break;
-										default:
-											attributeList[inputList[i].name] = inputList[i].value;
-											break;
-									}
-								}
-								feature.setProperties(attributeList);
-								map.getOverlays().clear();
-							});
-							attributeForm.appendChild(saveAttributes);
-							this.addOverlay(
-								new Overlay({
-									element: attributeForm,
-									position: coord
-								})
-							);
-							firstFeature = false;
-						}
-					}
-				},
-				map,
-				function(layerCandidate) {
-					if (
-						this.selectedLayer !== null &&
-						layerCandidate.get("id") === this.selectedLayer.id
-					) {
-						return true;
-					}
-					return false;
-				},
-				layertree
-			);
-		});
-
 		this.props.onUpdateMap(map);
 		this.props.onUpdateTree(layertree);
 		this.props.onUpdateToolbar(toolbar);
@@ -336,7 +304,7 @@ export class Mainmap extends Component {
 			<div>
 				<div id="toolbar" className="toolbar" />
 				<div id="layertree" className="layertree" />
-				<div id="map" className="map">
+				<div id="map" className="map" tabIndex="-1">
 					{/* <div className="nosupport">
 						Map hasn't loaded, ensure that your browser supports this
 						functionality.

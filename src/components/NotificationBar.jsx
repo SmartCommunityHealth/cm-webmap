@@ -5,6 +5,8 @@ export class NotificationBar extends Component {
 		return (
 			<div className="notification-bar">
 				<div id="messageBar" className="message-bar" />
+				<div id="projection" />
+				<div id="rotation" />
 				<div id="coordinates" />
 			</div>
 		);

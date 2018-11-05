@@ -1,14 +1,21 @@
-//@ts-check
-
 import { Component } from "react";
 
-import { Collection, Map, inherits, Observable, Feature } from "ol";
+import { Collection, Map, inherits, Observable, Feature, Overlay } from "ol";
 import { Vector as VectorLayer } from "ol/layer";
-import { Control } from "ol/control";
+import { Control, ZoomToExtent, Zoom } from "ol/control";
 import { Vector as VectorSource } from "ol/source";
-import { Select, DragBox, Draw, Modify, Snap, Pointer } from "ol/interaction";
+import {
+	Select,
+	DragBox,
+	Draw,
+	Modify,
+	Snap,
+	Pointer,
+	Interaction as intInteraction
+} from "ol/interaction";
 import { Style, Circle, Fill, Stroke } from "ol/style";
 import { Point, Polygon, LineString } from "ol/geom";
+import SimpleGeometry from "ol/geom/SimpleGeometry";
 
 export class Toolbar extends Component {
 	"use strict";
@@ -40,6 +47,8 @@ Toolbar.prototype.addControl = function(control) {
 	if (!(control instanceof Control)) {
 		throw new Error("Only controls can be added to the toolbar.");
 	}
+
+	// if it's a toggle control then toggle off all other toggle controls when this one is toggled on
 	if (control.get("type") === "toggle") {
 		control.on(
 			"change:active",
@@ -58,6 +67,8 @@ Toolbar.prototype.addControl = function(control) {
 			this
 		);
 	}
+
+	// add control to the toolbar, the controls array and the map
 	control.setTarget(this.toolbar);
 	this.controls.push(control);
 	this.map.addControl(control);
@@ -80,6 +91,7 @@ export const Interaction = function(opt_options) {
 	controlButton.textContent = options.label || "I";
 	controlButton.title = options.tipLabel || "Custom interaction";
 	controlDiv.appendChild(controlButton);
+
 	this.setDisabled = function(bool) {
 		if (typeof bool === "boolean") {
 			controlButton.disabled = bool;
@@ -147,6 +159,152 @@ Interaction.prototype.setMap = function(map) {
 			map.getControls().on("remove", this.get("destroyFunction"), map)
 		);
 	}
+};
+
+Toolbar.prototype.addInfoControl = function() {
+	const layertree = this.layertree;
+	const map = this.map;
+
+	const selectInteraction = new Select({
+		layers: function(layer) {
+			if (layertree.selectedLayer) {
+				if (layer === layertree.getLayerById(layertree.selectedLayer.id)) {
+					return true;
+				}
+			}
+			return false;
+		}
+	});
+
+	const info = new Interaction({
+		label: "i",
+		tipLabel: "Info",
+		className: "ol-singleselect ol-unselectable ol-control",
+		interaction: selectInteraction
+	}).setDisabled(true);
+
+	layertree.selectEventEmitter.on(
+		"change",
+		() => {
+			const layer = layertree.getLayerById(layertree.selectedLayer.id);
+			if (layer instanceof VectorLayer) {
+				info.setDisabled(false);
+				const infoActive = info.get("active");
+
+				map.on("click", function(evt) {
+					const pixel = evt.pixel;
+					const coord = evt.coordinate;
+					const attributeForm = document.createElement("form");
+					attributeForm.className = "popup";
+					this.getOverlays().clear();
+
+					let firstFeature = true;
+
+					function createRow(attributeName, attributeValue /*, type*/) {
+						const rowElem = document.createElement("div");
+						const attributeSpan = document.createElement("span");
+						attributeSpan.textContent = attributeName + ": ";
+						rowElem.appendChild(attributeSpan);
+						const attributeInput = document.createElement("input");
+						attributeInput.disabled = true;
+						attributeInput.className = "form-control form-control-sm";
+						attributeInput.name = attributeName;
+						attributeInput.type = "text";
+						// if (type !== "string") {
+						// 	attributeInput.type = "number";
+						// 	attributeInput.step = type === "float" ? 1e-6 : 1;
+						// }
+						attributeInput.value = attributeValue;
+						rowElem.appendChild(attributeInput);
+						return rowElem;
+					}
+
+					this.forEachFeatureAtPixel(
+						pixel,
+						(feature, layer) => {
+							if (firstFeature) {
+								const attributes = feature.getProperties();
+								// const headers = layer.get("headers");
+								for (var i in attributes) {
+									if (typeof attributes[i] !== "object" /*&& i in headers*/) {
+										attributeForm.appendChild(
+											createRow(i, attributes[i] /*, headers[i] */)
+										);
+									}
+								}
+								if (attributeForm.children.length > 0) {
+									// const saveAttributes = document.createElement("input");
+									// saveAttributes.type = "submit";
+									// saveAttributes.className = "save";
+									// saveAttributes.value = "";
+									// attributeForm.addEventListener("submit", function(evt) {
+									// 	evt.preventDefault();
+									// 	let attributeList = {};
+									// 	let inputList = [].slice.call(this.querySelectorAll("input"));
+									// 	for (var i = 0; i < inputList.length; i += 1) {
+									// 		switch (headers[inputList[i].name]) {
+									// 			case "string":
+									// 				attributeList[inputList[i].name] = inputList[
+									// 					i
+									// 				].value.toString();
+									// 				break;
+									// 			case "integer":
+									// 				attributeList[inputList[i].name] = parseInt(
+									// 					inputList[i].value
+									// 				);
+									// 				break;
+									// 			case "float":
+									// 				attributeList[inputList[i].name] = parseFloat(
+									// 					inputList[i].value
+									// 				);
+									// 				break;
+									// 			default:
+									// 				attributeList[inputList[i].name] = inputList[i].value;
+									// 				break;
+									// 		}
+									// 	}
+									// 	feature.setProperties(attributeList);
+									// 	map.getOverlays().clear();
+									// });
+									// attributeForm.appendChild(saveAttributes);
+									this.addOverlay(
+										new Overlay({
+											element: attributeForm,
+											position: coord
+										})
+									);
+									firstFeature = false;
+								}
+							}
+						},
+						map,
+						function(layerCandidate) {
+							if (
+								this.selectedLayer !== null &&
+								layerCandidate.get("id") === this.selectedLayer.id
+							) {
+								return true;
+							}
+							return false;
+						},
+						layertree
+					);
+				});
+
+				const _this = this;
+				setTimeout(function() {
+					_this.activeFeatures.clear();
+				}, 0);
+			} else {
+				info.setDisabled(true);
+			}
+		},
+		this
+	);
+
+	this.addControl(info);
+
+	return this;
 };
 
 Toolbar.prototype.addSelectControls = function() {
@@ -225,6 +383,7 @@ Toolbar.prototype.addEditingToolBar = function() {
 		)
 	}).setDisabled(true);
 	this.editingControls.push(drawPoint);
+
 	const drawLine = new Interaction({
 		label: " ",
 		tipLabel: "Add lines",
@@ -238,6 +397,7 @@ Toolbar.prototype.addEditingToolBar = function() {
 		)
 	}).setDisabled(true);
 	this.editingControls.push(drawLine);
+
 	const drawPolygon = new Interaction({
 		label: " ",
 		tipLabel: "Add polygons",
@@ -251,6 +411,7 @@ Toolbar.prototype.addEditingToolBar = function() {
 		)
 	}).setDisabled(true);
 	this.editingControls.push(drawPolygon);
+
 	const removeFeature = new Interaction({
 		label: " ",
 		tipLabel: "Remove features",
@@ -260,6 +421,7 @@ Toolbar.prototype.addEditingToolBar = function() {
 		})
 	}).setDisabled(true);
 	this.editingControls.push(removeFeature);
+
 	const dragFeature = new Interaction({
 		label: " ",
 		tipLabel: "Drag features",
@@ -281,6 +443,7 @@ Toolbar.prototype.addEditingToolBar = function() {
 		})
 	}).setDisabled(true);
 	this.editingControls.push(modifyFeature);
+
 	const snapFeature = new Interaction({
 		label: " ",
 		tipLabel: "Snap to paths, and vertices",
@@ -325,9 +488,9 @@ Toolbar.prototype.addEditingToolBar = function() {
 		.addControl(drawLine)
 		.addControl(drawPolygon)
 		.addControl(modifyFeature)
-		.addControl(snapFeature)
-		.addControl(removeFeature)
-		.addControl(dragFeature);
+		.addControl(snapFeature);
+	// .addControl(removeFeature)
+	// .addControl(dragFeature);
 	return this;
 };
 
@@ -393,13 +556,16 @@ Toolbar.prototype.handleEvents = function(interaction, type) {
 };
 
 export const RemoveFeature = function(opt_options) {
+	console.log("this_out: ", this);
 	Pointer.call(this, {
 		handleDownEvent: function(evt) {
+			console.log("this_in: ", this);
 			this.set(
 				"deleteCandidate",
 				evt.map.forEachFeatureAtPixel(
 					evt.pixel,
 					(feature, layer) => {
+						console.log("this_in_in: ", this);
 						if (
 							this.get("features")
 								.getArray()
@@ -459,8 +625,8 @@ export const DragFeature = function(opt_options) {
 			return !!this.get("draggedFeature");
 		},
 		handleDragEvent: function(evt) {
-			var deltaX = evt.coordinate[0] - this.get("coords")[0];
-			var deltaY = evt.coordinate[1] - this.get("coords")[1];
+			let deltaX = evt.coordinate[0] - this.get("coords")[0];
+			let deltaY = evt.coordinate[1] - this.get("coords")[1];
 			this.get("draggedFeature")
 				.getGeometry()
 				.translate(deltaX, deltaY);
@@ -607,5 +773,214 @@ export const Measure = opt_options => {
 	});
 };
 inherits(Measure, Interaction);
+
+export const NavigationHistory = function(opt_options) {
+	const options = opt_options || {};
+	const _this = this;
+	const controlDiv = document.createElement("div");
+	controlDiv.className = options.class || "ol-unselectable ol-control";
+	const backButton = document.createElement("button");
+	backButton.className = "ol-navhist-back";
+	backButton.textContent = options.backButtonText || "◀";
+	backButton.title = options.backButtonTipLabel || "Previous view";
+	backButton.addEventListener("click", function(evt) {
+		const historyArray = _this.get("history");
+		const currIndex = _this.get("index");
+		if (currIndex > 0) {
+			currIndex -= 1;
+			_this.setProperties({
+				shouldSave: false,
+				index: currIndex
+			});
+			_this
+				.getMap()
+				.getView()
+				.setProperties(historyArray[currIndex]);
+		}
+	});
+	backButton.disabled = true;
+	controlDiv.appendChild(backButton);
+
+	const nextButton = document.createElement("button");
+	nextButton.className = "ol-navhist-next";
+	nextButton.textContent = options.nextButtonText || "►";
+	nextButton.title = options.nextButtonTipLabel || "Next view";
+	nextButton.addEventListener("click", function(evt) {
+		const historyArray = _this.get("history");
+		const currIndex = _this.get("index");
+		if (currIndex < historyArray.length - 1) {
+			currIndex += 1;
+			_this.setProperties({
+				shouldSave: false,
+				index: currIndex
+			});
+			_this
+				.getMap()
+				.getView()
+				.setProperties(historyArray[currIndex]);
+		}
+	});
+	nextButton.disabled = true;
+	controlDiv.appendChild(nextButton);
+	Control.call(this, {
+		element: controlDiv,
+		target: options.target
+	});
+	this.setProperties({
+		history: [],
+		index: -1,
+		maxSize: options.maxSize || 50,
+		eventId: null,
+		shouldSave: true
+	});
+	this.on("change:index", function() {
+		if (this.get("index") === 0) {
+			backButton.disabled = true;
+		} else {
+			backButton.disabled = false;
+		}
+		if (this.get("history").length - 1 === this.get("index")) {
+			nextButton.disabled = true;
+		} else {
+			nextButton.disabled = false;
+		}
+	});
+};
+inherits(NavigationHistory, Control);
+
+NavigationHistory.prototype.setMap = function(map) {
+	Control.prototype.setMap.call(this, map);
+	if (map === null) {
+		Observable.unByKey(this.get("eventId"));
+	} else {
+		this.set(
+			"eventId",
+			map.on(
+				"moveend",
+				function(evt) {
+					if (this.get("shouldSave")) {
+						const view = map.getView();
+						const viewStatus = {
+							center: view.getCenter(),
+							resolution: view.getResolution(),
+							rotation: view.getRotation()
+						};
+						const historyArray = this.get("history");
+						const currIndex = this.get("index");
+						historyArray.splice(
+							currIndex + 1,
+							historyArray.length - currIndex - 1
+						);
+						if (historyArray.length === this.get("maxSize")) {
+							historyArray.splice(0, 1);
+						} else {
+							currIndex += 1;
+						}
+						historyArray.push(viewStatus);
+						this.set("index", currIndex);
+					} else {
+						this.set("shouldSave", true);
+					}
+				},
+				this
+			)
+		);
+	}
+};
+
+export const ZoomTo = function(opt_options) {
+	const options = opt_options || {};
+	const _this = this;
+	const controlDiv = document.createElement("div");
+	controlDiv.className = options.class || "ol-unselectable ol-control";
+	const controlButton = document.createElement("button");
+	controlButton.textContent = options.label || "";
+	controlButton.title = options.tipLabel || "Zoom to extent";
+	controlButton.addEventListener("click", function(evt) {
+		const zoomCandidate = _this.get("extentFunction")();
+		if (
+			zoomCandidate instanceof SimpleGeometry ||
+			(Object.prototype.toString.call(zoomCandidate) === "[object Array]" &&
+				zoomCandidate.length === 4)
+		) {
+			_this
+				.getMap()
+				.getView()
+				.fit(zoomCandidate, _this.getMap().getSize());
+		}
+	});
+	controlDiv.appendChild(controlButton);
+	Control.call(this, {
+		element: controlDiv,
+		target: options.target
+	});
+	this.set("extentFunction", options.zoomFunction);
+};
+inherits(ZoomTo, Control);
+
+Toolbar.prototype.addExtentControls = function() {
+	const _this = this;
+	const zoomFull = new ZoomToExtent({
+		label: " ",
+		tipLabel: "Zoom to full extent"
+	});
+	const zoomToLayer = new Zoom({
+		class: "ol-zoom-layer ol-unselectable ol-control",
+		tipLabel: "Zoom to layer extent",
+		extentFunction: function() {
+			const source = _this.layertree
+				.getLayerById(_this.layertree.selectedLayer.id)
+				.getSource();
+			if (source.getExtent()) {
+				return source.getExtent();
+			}
+			return false;
+		}
+	});
+	const zoomToSelected = new Zoom({
+		class: "ol-zoom-selected ol-unselectable ol-control",
+		tipLabel: "Zoom to selected feature",
+		extentFunction: function() {
+			const features = _this.selectInteraction.getFeatures();
+			if (features.getLength() === 1) {
+				const geom = features.item(0).getGeometry();
+				if (geom instanceof SimpleGeometry) {
+					return geom;
+				}
+				return geom.getExtent();
+			}
+			return false;
+		}
+	});
+	this.addControl(zoomFull);
+	// .addControl(zoomToLayer)
+	// .addControl(zoomToSelected);
+	return this;
+};
+
+export const RotationControl = function(opt_options) {
+	const options = opt_options || {};
+	const _this = this;
+	const controlInput = document.createElement("input");
+	controlInput.title = options.tipLabel || "Set rotation";
+	controlInput.type = "number";
+	controlInput.min = 0;
+	controlInput.max = 360;
+	controlInput.step = 1;
+	controlInput.value = 0;
+	controlInput.addEventListener("change", function(evt) {
+		const radianValue = (this.value / 180) * Math.PI;
+		_this
+			.getMap()
+			.getView()
+			.setRotation(radianValue);
+	});
+	Control.call(this, {
+		element: controlInput,
+		target: options.target
+	});
+	this.set("element", controlInput);
+};
+inherits(RotationControl, Control);
 
 export default Toolbar;

@@ -210,60 +210,60 @@ class Layertree extends Component {
 				);
 				layerDiv.appendChild(layerControls);
 
-				//styling options
-				if (layer instanceof VectorLayer) {
-					layerControls.appendChild(document.createElement("hr"));
-					const attributeOptions = document.createElement("select");
-					attributeOptions.className = "form-control";
-					layerControls.appendChild(
-						this.stopPropagationOnEvent(attributeOptions, "click")
-					);
-					layerControls.appendChild(document.createElement("br"));
-					const defaultStyle = this.createButton(
-						"stylelayer",
-						"Default",
-						"stylelayer",
-						layer
-					);
-					layerControls.appendChild(
-						this.stopPropagationOnEvent(defaultStyle, "click")
-					);
-					defaultStyle.className = "btn btn-primary btn-sm";
-					const graduatedStyle = this.createButton(
-						"stylelayer",
-						"Graduated",
-						"stylelayer",
-						layer
-					);
-					layerControls.appendChild(
-						this.stopPropagationOnEvent(graduatedStyle, "click")
-					);
-					graduatedStyle.className = "btn btn-primary btn-sm";
-					const categorizedStyle = this.createButton(
-						"stylelayer",
-						"Categorized",
-						"stylelayer",
-						layer
-					);
-					layerControls.appendChild(
-						this.stopPropagationOnEvent(categorizedStyle, "click")
-					);
-					categorizedStyle.className = "btn btn-primary btn-sm";
-					layer.set("style", layer.getStyle());
-					layer.on(
-						"propertychange",
-						function(evt) {
-							if (evt.key === "headers") {
-								this.removeContent(attributeOptions);
-								const headers = layer.get("headers");
-								for (var i in headers) {
-									attributeOptions.appendChild(this.createOption(i));
-								}
-							}
-						},
-						this
-					);
-				}
+				// //styling options
+				// if (layer instanceof VectorLayer) {
+				// 	layerControls.appendChild(document.createElement("hr"));
+				// 	const attributeOptions = document.createElement("select");
+				// 	attributeOptions.className = "form-control";
+				// 	layerControls.appendChild(
+				// 		this.stopPropagationOnEvent(attributeOptions, "click")
+				// 	);
+				// 	layerControls.appendChild(document.createElement("br"));
+				// 	const defaultStyle = this.createButton(
+				// 		"stylelayer",
+				// 		"Default",
+				// 		"stylelayer",
+				// 		layer
+				// 	);
+				// 	layerControls.appendChild(
+				// 		this.stopPropagationOnEvent(defaultStyle, "click")
+				// 	);
+				// 	defaultStyle.className = "btn btn-primary btn-sm";
+				// 	const graduatedStyle = this.createButton(
+				// 		"stylelayer",
+				// 		"Graduated",
+				// 		"stylelayer",
+				// 		layer
+				// 	);
+				// 	layerControls.appendChild(
+				// 		this.stopPropagationOnEvent(graduatedStyle, "click")
+				// 	);
+				// 	graduatedStyle.className = "btn btn-primary btn-sm";
+				// 	const categorizedStyle = this.createButton(
+				// 		"stylelayer",
+				// 		"Categorized",
+				// 		"stylelayer",
+				// 		layer
+				// 	);
+				// 	layerControls.appendChild(
+				// 		this.stopPropagationOnEvent(categorizedStyle, "click")
+				// 	);
+				// 	categorizedStyle.className = "btn btn-primary btn-sm";
+				// 	layer.set("style", layer.getStyle());
+				// 	layer.on(
+				// 		"propertychange",
+				// 		function(evt) {
+				// 			if (evt.key === "headers") {
+				// 				this.removeContent(attributeOptions);
+				// 				const headers = layer.get("headers");
+				// 				for (var i in headers) {
+				// 					attributeOptions.appendChild(this.createOption(i));
+				// 				}
+				// 			}
+				// 		},
+				// 		this
+				// 	);
+				// }
 
 				this.layerContainer.insertBefore(
 					layerDiv,
@@ -639,7 +639,7 @@ Layertree.prototype.styleGraduated = function(layer, attribute) {
 		this.messages.textContent =
 			"A numeric column is required for graduated symbology.";
 	} else {
-		let attributeArray = [];
+		const attributeArray = [];
 		layer.getSource().forEachFeature(function(feat) {
 			attributeArray.push(feat.get(attribute));
 		});
