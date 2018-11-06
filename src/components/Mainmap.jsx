@@ -187,49 +187,49 @@ export class Mainmap extends Component {
 				})
 			]),
 			layers: [
-				new Tile({
-					preload: Infinity,
-					source: new XYZ({
-						url:
-							"https://{1-4}.base.maps.cit.api.here.com" +
-							"/maptile/2.1/maptile/newest/normal.day/{z}/{x}/{y}/256/png" +
-							"?app_id=YjdDTdj88GNyfakDOdHb&app_code=oGkX5PmOR795UlljwC7NCg",
-						attributions:
-							"Map Tiles &copy; " +
-							new Date().getFullYear() +
-							" " +
-							'<a href="http://developer.here.com">HERE</a>'
-					}),
-					type: "base",
-					title: "Normal Day",
-					name: "Here Maps - Normal Day",
-					description: "Here - Normal Day WTS Layer",
-					visible: false,
-					wrapX: false,
-					crossOrigin: "anonymous"
-				}),
-				new Tile({
-					source: new TileWMS({
-						url: "http://demo.opengeo.org/geoserver/wms",
-						params: {
-							layers: "ne_50m_land",
-							format: "image/png"
-						}
-					}),
-					name: "Natural Earth Land",
-					visible: false,
-					wrapX: false,
-					crossOrigin: "anonymous"
-				}),
+				// new Tile({
+				// 	preload: Infinity,
+				// 	source: new XYZ({
+				// 		url:
+				// 			"https://{1-4}.base.maps.cit.api.here.com" +
+				// 			"/maptile/2.1/maptile/newest/normal.day/{z}/{x}/{y}/256/png" +
+				// 			"?app_id=YjdDTdj88GNyfakDOdHb&app_code=oGkX5PmOR795UlljwC7NCg",
+				// 		attributions:
+				// 			"Map Tiles &copy; " +
+				// 			new Date().getFullYear() +
+				// 			" " +
+				// 			'<a href="http://developer.here.com">HERE</a>'
+				// 	}),
+				// 	type: "base",
+				// 	title: "Normal Day",
+				// 	name: "Here Maps - Normal Day",
+				// 	description: "Here - Normal Day WTS Layer",
+				// 	visible: false,
+				// 	wrapX: false,
+				// 	crossOrigin: "anonymous"
+				// }),
+				// new Tile({
+				// 	source: new TileWMS({
+				// 		url: "http://demo.opengeo.org/geoserver/wms",
+				// 		params: {
+				// 			layers: "ne_50m_land",
+				// 			format: "image/png"
+				// 		}
+				// 	}),
+				// 	name: "Natural Earth Land",
+				// 	visible: false,
+				// 	wrapX: false,
+				// 	crossOrigin: "anonymous"
+				// }),
 				new Tile({
 					name: "Open Street Map",
 					source: new OSM(),
 					visible: true,
 					wrapX: false,
 					crossOrigin: "anonymous"
-				}),
-				countries,
-				capitals
+				})
+				// countries,
+				// capitals
 			],
 			loadTilesWhileAnimating: true,
 			loadTilesWhileInteracting: true,
@@ -241,26 +241,25 @@ export class Mainmap extends Component {
 			map: map,
 			target: "layertree",
 			messages: "messageBar"
-		})
-			.createRegistry(map.getLayers().item(0))
-			.createRegistry(map.getLayers().item(1))
-			.createRegistry(map.getLayers().item(2))
-			.createRegistry(map.getLayers().item(3))
-			.createRegistry(map.getLayers().item(4));
+		}).createRegistry(map.getLayers().item(0));
+		// .createRegistry(map.getLayers().item(1))
+		// .createRegistry(map.getLayers().item(2))
+		// .createRegistry(map.getLayers().item(3))
+		// .createRegistry(map.getLayers().item(4));
 
-		map
-			.getLayers()
-			.item(3)
-			.getSource()
-			.once("change", function(evt) {
-				if (this.getState() === "ready") {
-					map.addInteraction(
-						new Modify({
-							features: new Collection(evt.target.getFeatures())
-						})
-					);
-				}
-			});
+		// map
+		// 	.getLayers()
+		// 	.item(3)
+		// 	.getSource()
+		// 	.once("change", function(evt) {
+		// 		if (this.getState() === "ready") {
+		// 			map.addInteraction(
+		// 				new Modify({
+		// 					features: new Collection(evt.target.getFeatures())
+		// 				})
+		// 			);
+		// 		}
+		// 	});
 
 		const toolbar = new Toolbar({
 			map: map,

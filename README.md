@@ -2,19 +2,19 @@
 
 ---
 
-This is a web mapping application written in react.js. It uses geoserver as the map server and postgis as the spatial database. The functionality of the app includes the following:
+A web mapping application written in react.js which includes a custom toolbar and Layertree. It uses Geoserver as the map server and Postgis as the spatial database. The functionality of the app includes the following:
 
-1. Ability to fetch layers from any WMS server, as long as you have the url.
-2. Ability to fetch wfs layers from any WFS server as long as you have the url
-3. Ability to add vector layers from you local storage. (currently only supports GeoJSON, TopoJSON, KML and OSMXML).
-4. Ability to add vector layers through drag and drop onto the map canvas.
-5. Ability to change the layer drawing order by dragging layers up or down on the layer tree and changing layer visibility.
-6. Ability to change the layer's style. (currently supports opacity and a simple implementation of thematic mapping).
-7. Basic Openlayers controls including the following:
+1. Fetching layers from any WMS server, as long as you have the url.
+2. Adding vector layers from your local storage. (currently only supports GeoJSON, TopoJSON, KML and OSMXML). Also supports adding via drag and drop onto the map canvas.
+3. Changing the layer drawing order by dragging layers up or down on the layer tree, changing layer visibility and varying the opacity.
+4. Importing shapefiles.
+5. Basic Openlayers controls including the following:
    a. Zooming in and out.
    b. switching to a fullscreen map
    c. selecting a single feature and selecting using a dragbox
-   e. drawing point, line and polygon features
+   e. drawing new point, line and polygon features
+   f. modifying features,
+   g. zooming to the full extent of the map
 
 ### Datasets:
 
@@ -66,6 +66,7 @@ The following are planned implementations:
 1. Implementing a legend control either by using the ol-ext library or building it from scratch if the library doesn't provide all the suitable fuctionality.
 2. Implement a globe view using the cesium library.
 3. Add fly-to animation.
+4. Ability to fetch wfs layers from any WFS server as long as you have the url
 
 ### Areas of Improvement:
 
@@ -74,4 +75,4 @@ The following are planned implementations:
 3. Create documentation with JSDoc.
 
 License:
-This software is licensed under the GNU Affero General Public License Version 3, 19 November 2007. Find more information in the LICENSE file.
+This software is licensed under the GNU Affero General Public License Version 3, 19 November 2007. Find more information in the LICENSE file. Libraries used use their respective licenses.
