@@ -33,7 +33,8 @@ import Layertree from "./Layertree";
 import Toolbar, {
 	RocketFlight,
 	Print,
-	Turf /*, { Interaction, Measure, NavigationHistory } */
+	Turf,
+	Cesium /*, { Interaction, Measure, NavigationHistory } */
 } from "./Toolbar";
 import { RotationControl, Projection } from "./NotificationBar";
 

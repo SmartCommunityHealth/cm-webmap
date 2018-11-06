@@ -30,9 +30,6 @@ const cssModuleRegex = /\.module\.css$/;
 const sassRegex = /\.(scss|sass)$/;
 const sassModuleRegex = /\.module\.(scss|sass)$/;
 
-const cesiumSource = "node_modules/cesium/Source";
-const cesiumWorkers = "../Build/Cesium/Workers";
-
 // common function to get style loaders
 const getStyleLoaders = (cssOptions, preProcessor) => {
 	const loaders = [
@@ -143,9 +140,6 @@ module.exports = {
 		// for React Native Web.
 		extensions: [".mjs", ".web.js", ".js", ".json", ".web.jsx", ".jsx"],
 		alias: {
-        // Cesium module name
-        cesium: path.resolve(__dirname, cesiumSource)
-      
 			// Support React Native Web
 			// https://www.smashingmagazine.com/2016/08/a-glimpse-into-the-future-with-react-native-for-web/
 			"react-native": "react-native-web"
@@ -393,10 +387,5 @@ module.exports = {
 	amd: {
 		// Enable webpack-friendly use of require in Cesium
 		toUrlUndefined: true
-	},
-	node: {
-		// Resolve node module use of fs
-		fs: "empty"
-	},
-	
+	}
 };

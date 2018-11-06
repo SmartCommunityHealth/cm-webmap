@@ -29,7 +29,7 @@ import { GeoJSON } from "ol/format";
 
 import turf from "turf";
 // import olcs from "ol-cesium";
-// import CesiumIm from "cesium";
+// import CesiumIm from "webpack-cesium";
 
 export class Toolbar extends Component {
 	"use strict";
@@ -1213,7 +1213,7 @@ inherits(Turf, Control);
 // 	const controlDiv = document.createElement("div");
 // 	controlDiv.className =
 // 		options.class || "ol-cesium ol-unselectable ol-control";
-// 	setTimeout(function() {
+// 	setTimeout(() => {
 // 		const ol3d = new olcs.OLCesium({ map: _this.getMap() });
 // 		const scene = ol3d.getCesiumScene();
 // 		scene.terrainProvider = new CesiumIm.CesiumTerrainProvider({
