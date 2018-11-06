@@ -20,20 +20,20 @@ self.__precacheManifest = [
     "url": "/cm-webmap/static/js/runtime~main.165db5a2.js"
   },
   {
-    "revision": "7bb8ce8e73034b963edb347c8a12e7c1",
-    "url": "/cm-webmap/static/media/button_addpoint.7bb8ce8e.png"
-  },
-  {
     "revision": "85dc52da17c7f486e1ceb72696930d7b",
     "url": "/cm-webmap/static/media/button_deselect.85dc52da.png"
   },
   {
-    "revision": "e7a75d4fff718243546a17b24625f821",
-    "url": "/cm-webmap/static/media/button_addline.e7a75d4f.png"
+    "revision": "7bb8ce8e73034b963edb347c8a12e7c1",
+    "url": "/cm-webmap/static/media/button_addpoint.7bb8ce8e.png"
   },
   {
     "revision": "0d5af046a1f4799b79cb03dc71555447",
     "url": "/cm-webmap/static/media/button_addpolygon.0d5af046.png"
+  },
+  {
+    "revision": "e7a75d4fff718243546a17b24625f821",
+    "url": "/cm-webmap/static/media/button_addline.e7a75d4f.png"
   },
   {
     "revision": "e9eb535d0f577a8c8cc91549c5c26374",
@@ -48,16 +48,12 @@ self.__precacheManifest = [
     "url": "/cm-webmap/static/media/button_removefeat.a60e92b3.png"
   },
   {
-    "revision": "0eb56dfe84391618590d84af267d94c1",
-    "url": "/cm-webmap/static/media/button_dragfeat.0eb56dfe.png"
-  },
-  {
     "revision": "25e0d33da53f1f726eb47376919e0354",
     "url": "/cm-webmap/static/media/button_zoom_selected.25e0d33d.png"
   },
   {
-    "revision": "0b08dde075e7d9950dc57f94f465e6d0",
-    "url": "/cm-webmap/static/media/button_zoom_extent.0b08dde0.png"
+    "revision": "0eb56dfe84391618590d84af267d94c1",
+    "url": "/cm-webmap/static/media/button_dragfeat.0eb56dfe.png"
   },
   {
     "revision": "94fa8f112fb2ac5df75cb67bebcfbad7",
@@ -66,6 +62,10 @@ self.__precacheManifest = [
   {
     "revision": "cf3a61b8f78cb2f7700ebf4ebbea5750",
     "url": "/cm-webmap/static/media/button_zoom_layer.cf3a61b8.png"
+  },
+  {
+    "revision": "0b08dde075e7d9950dc57f94f465e6d0",
+    "url": "/cm-webmap/static/media/button_zoom_extent.0b08dde0.png"
   },
   {
     "revision": "a01a6d3d9a380a1e660bdcfb918f3226",
