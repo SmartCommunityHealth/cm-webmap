@@ -1,16 +1,16 @@
 {
   "main.css": "/cm-webmap/static/css/main.ee385c9a.chunk.css",
-  "main.js": "/cm-webmap/static/js/main.45d0a918.chunk.js",
-  "main.js.map": "/cm-webmap/static/js/main.45d0a918.chunk.js.map",
+  "main.js": "/cm-webmap/static/js/main.74b8c3a3.chunk.js",
+  "main.js.map": "/cm-webmap/static/js/main.74b8c3a3.chunk.js.map",
   "static/css/1.9e101536.chunk.css": "/cm-webmap/static/css/1.9e101536.chunk.css",
-  "static/js/1.ba70f293.chunk.js": "/cm-webmap/static/js/1.ba70f293.chunk.js",
-  "static/js/1.ba70f293.chunk.js.map": "/cm-webmap/static/js/1.ba70f293.chunk.js.map",
+  "static/js/1.6f0a70b5.chunk.js": "/cm-webmap/static/js/1.6f0a70b5.chunk.js",
+  "static/js/1.6f0a70b5.chunk.js.map": "/cm-webmap/static/js/1.6f0a70b5.chunk.js.map",
   "runtime~main.js": "/cm-webmap/static/js/runtime~main.165db5a2.js",
   "runtime~main.js.map": "/cm-webmap/static/js/runtime~main.165db5a2.js.map",
-  "static/media/App.css": "/cm-webmap/static/media/button_addpoint.7bb8ce8e.png",
-  "static/css/1.9e101536.chunk.css.map": "/cm-webmap/static/css/1.9e101536.chunk.css.map",
+  "static/media/App.css": "/cm-webmap/static/media/button_deselect.85dc52da.png",
   "static/css/main.ee385c9a.chunk.css.map": "/cm-webmap/static/css/main.ee385c9a.chunk.css.map",
+  "static/css/1.9e101536.chunk.css.map": "/cm-webmap/static/css/1.9e101536.chunk.css.map",
   "index.html": "/cm-webmap/index.html",
-  "precache-manifest.404a61f3896680af70fafc093738405e.js": "/cm-webmap/precache-manifest.404a61f3896680af70fafc093738405e.js",
+  "precache-manifest.4f1e243afe1bfc0c46c7424d6749fac9.js": "/cm-webmap/precache-manifest.4f1e243afe1bfc0c46c7424d6749fac9.js",
   "service-worker.js": "/cm-webmap/service-worker.js"
 }
