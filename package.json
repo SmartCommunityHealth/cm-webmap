@@ -58,7 +58,7 @@
 		"shp": "0.0.1",
 		"shpjs": "^3.4.2",
 		"style-loader": "0.23.0",
-		"terser-webpack-plugin": "1.1.0",
+		"terser-webpack-plugin": "1.4.2",
 		"turf": "^3.0.14",
 		"url-loader": "1.1.1",
 		"webpack": "4.19.1",
