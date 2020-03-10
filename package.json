@@ -61,7 +61,7 @@
 		"terser-webpack-plugin": "1.4.2",
 		"turf": "^3.0.14",
 		"url-loader": "1.1.1",
-		"webpack": "4.19.1",
+		"webpack": "4.29.0",
 		"webpack-cesium": "^1.37.0",
 		"webpack-dev-server": "3.1.9",
 		"webpack-manifest-plugin": "2.0.4",
